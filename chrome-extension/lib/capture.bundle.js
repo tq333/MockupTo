@@ -1,5 +1,5 @@
 // Mockup Sync · capture bundle
-// Generated: 2026-05-09T07:13:52.129Z
+// Generated: 2026-05-09T07:41:29.679Z
 // Source: chrome-extension/src/capture.src.js
 // Mapping: mockup-kit.mapping.json (v1.0.0)
 // DO NOT EDIT — regenerate with `npm run build`
@@ -209,35 +209,81 @@
     const fill = paintFromRgb(cs.backgroundColor, el);
     if (fill) style.fill = fill;
 
+    // ── Borders ──────────────────────────────────────────────────────────
     // Border-collapse–aware path for table cells/rows/sections — only emits
     // the right/bottom sides so shared edges aren't drawn twice.
-    const sides = collapsedCellSides(el, cs);
-    if (sides) {
-      style.strokeSides = sides;
+    const collapsed = collapsedCellSides(el, cs);
+    if (collapsed) {
+      style.strokeSides = collapsed;
     } else {
-      // Border: only emit if width > 0 on at least one side. We use the top
-      // side as the canonical value (consistent with HTML where most borders
-      // are uniform).
-      const borderW = parsePx(cs.borderTopWidth);
-      if (borderW > 0) {
-        const stroke = paintFromRgb(cs.borderTopColor, el);
-        if (stroke) {
-          style.stroke = { paint: stroke, weight: borderW, align: 'INSIDE' };
+      // General path: read all four sides. If they're uniform we emit a
+      // single `stroke`; otherwise we emit `strokeSides` so the renderer can
+      // hide the missing side(s) — important for tabs, where active items
+      // typically have `border-bottom: none` so they merge with the panel.
+      const wT = parsePx(cs.borderTopWidth);
+      const wR = parsePx(cs.borderRightWidth);
+      const wB = parsePx(cs.borderBottomWidth);
+      const wL = parsePx(cs.borderLeftWidth);
+      const allEqual = wT === wR && wR === wB && wB === wL;
+      if (wT > 0 || wR > 0 || wB > 0 || wL > 0) {
+        const sideForPaint = wT > 0 ? 'Top' : wR > 0 ? 'Right' : wB > 0 ? 'Bottom' : 'Left';
+        const paint = paintFromRgb(cs['border' + sideForPaint + 'Color'], el);
+        if (paint) {
+          if (allEqual) {
+            style.stroke = { paint, weight: wT, align: 'INSIDE' };
+          } else {
+            style.strokeSides = { paint, top: wT, right: wR, bottom: wB, left: wL };
+          }
         }
       }
     }
 
-    // Border radius: take top-left as canonical. Express percent radius as a
-    // separate flag so Figma side can convert to half-of-min(w,h).
-    const rTL = cs.borderTopLeftRadius || '';
-    if (rTL.indexOf('%') !== -1) {
-      const pct = parseFloat(rTL);
-      if (Number.isFinite(pct) && pct > 0) {
-        style.radius = { percent: pct };
-      }
+    // Border style → dash pattern. CSS `dashed` and `dotted` need to round-trip
+    // so Figma renders the same texture (e.g. promo banner uses 2px dashed).
+    // Pick the canonical side from whichever has visible width above.
+    const styleSide = parsePx(cs.borderTopWidth) > 0 ? cs.borderTopStyle
+                    : parsePx(cs.borderRightWidth) > 0 ? cs.borderRightStyle
+                    : parsePx(cs.borderBottomWidth) > 0 ? cs.borderBottomStyle
+                    : parsePx(cs.borderLeftWidth) > 0 ? cs.borderLeftStyle
+                    : 'none';
+    if (style.stroke || style.strokeSides) {
+      const w = (style.stroke && style.stroke.weight)
+        || Math.max(
+          (style.strokeSides && style.strokeSides.top)    || 0,
+          (style.strokeSides && style.strokeSides.right)  || 0,
+          (style.strokeSides && style.strokeSides.bottom) || 0,
+          (style.strokeSides && style.strokeSides.left)   || 0,
+        ) || 1;
+      if (styleSide === 'dashed') style.dashPattern = [w * 2, w * 2];
+      else if (styleSide === 'dotted') style.dashPattern = [w, w];
+    }
+
+    // ── Border radius (per-corner) ──────────────────────────────────────
+    // Tabs and other directional shapes set only some corners (e.g.
+    // `3px 3px 0 0`). We must read all four corners; uniform falls back to
+    // the existing `radius.px` / `radius.percent` shape.
+    const rawTL = cs.borderTopLeftRadius     || '';
+    const rawTR = cs.borderTopRightRadius    || '';
+    const rawBR = cs.borderBottomRightRadius || '';
+    const rawBL = cs.borderBottomLeftRadius  || '';
+    const isPct = (s) => s.indexOf('%') !== -1;
+    if (isPct(rawTL) || isPct(rawTR) || isPct(rawBR) || isPct(rawBL)) {
+      // Mixed-percent isn't really a thing in our demos — keep top-left as
+      // the canonical pill/circle marker like before.
+      const pct = parseFloat(rawTL);
+      if (Number.isFinite(pct) && pct > 0) style.radius = { percent: pct };
     } else {
-      const rPx = parsePx(rTL);
-      if (rPx > 0) style.radius = { px: rPx };
+      const tl = parsePx(rawTL);
+      const tr = parsePx(rawTR);
+      const br = parsePx(rawBR);
+      const bl = parsePx(rawBL);
+      if (tl > 0 || tr > 0 || br > 0 || bl > 0) {
+        if (tl === tr && tr === br && br === bl) {
+          style.radius = { px: tl };
+        } else {
+          style.radius = { corners: { tl, tr, br, bl } };
+        }
+      }
     }
 
     // Box shadow: pass through raw CSS string; Figma side parses on import.
@@ -253,7 +299,23 @@
   }
 
   /**
-   * Normalize a #text node's raw `textContent` so that it matches what the
+   * Decide if a sibling node would lay out on the same baseline as a #text —
+   * i.e. it's an inline-ish thing whose presence requires a separating space.
+   * Text nodes always count. For elements we trust `display`: anything not
+   * `block` / `flex` / `grid` / `table` etc. counts as inline-ish.
+   */
+  function isInlineSibling(node) {
+    if (!node) return false;
+    if (node.nodeType === 3) return true; // adjacent text node
+    if (node.nodeType !== 1) return false;
+    let display = '';
+    try { display = getComputedStyle(node).display; } catch (_) {}
+    if (!display) return false;
+    return display.indexOf('inline') === 0 || display === 'ruby' || display === 'contents';
+  }
+
+  /**
+   * Normalize a #text node's raw `nodeValue` so that it matches what the
    * browser actually paints, before we hand it to Figma.
    *
    * Why: HTML source typically wraps inline text across multiple lines with
@@ -269,14 +331,17 @@
    *     preserves whitespace, so we must too. Return the raw string.
    *   - When it's `pre-line`, runs of spaces/tabs collapse but newlines are
    *     kept; we mirror that.
-   *   - Otherwise (`normal` / `nowrap`): collapse any whitespace run
-   *     (spaces, tabs, newlines) to a single space, then trim leading and
-   *     trailing whitespace. This matches the Range API's measured rect:
-   *     leading/trailing whitespace at line edges contributes 0 width, so
-   *     the rect is positioned around just the visible glyphs — emitting
-   *     trimmed characters keeps the text aligned with that rect.
+   *   - Otherwise (`normal` / `nowrap`):
+   *       1. Collapse any whitespace run (spaces, tabs, newlines) to a
+   *          single space.
+   *       2. Trim leading/trailing whitespace ONLY when there's no inline
+   *          neighbour on that side. Trimming next to an inline sibling
+   *          would glue words together, e.g.
+   *          `<span>Get </span><strong>OFF</strong> Discount` becoming
+   *          "Get OFFDiscount".
    */
-  function normalizeTextContent(raw, parentEl) {
+  function normalizeTextContent(node, parentEl) {
+    const raw = node.nodeValue;
     if (!raw) return raw;
     var ws = 'normal';
     try { ws = getComputedStyle(parentEl).whiteSpace || 'normal'; } catch (_) {}
@@ -284,10 +349,28 @@
       return raw;
     }
     if (ws === 'pre-line') {
-      // Collapse spaces/tabs but preserve explicit newlines.
       return raw.replace(/[ \t]+/g, ' ').replace(/ ?\n ?/g, '\n');
     }
-    return raw.replace(/\s+/g, ' ').replace(/^ | $/g, '');
+
+    let s = raw.replace(/\s+/g, ' ');
+    const hadLeading  = /^\s/.test(raw);
+    const hadTrailing = /\s$/.test(raw);
+
+    if (s.length > 0 && s.charCodeAt(0) === 32) {
+      const prev = node.previousSibling;
+      // Drop the leading space unless the original had whitespace AND there's
+      // an inline neighbour to its left (then the space is meaningful).
+      if (!hadLeading || !isInlineSibling(prev)) {
+        s = s.slice(1);
+      }
+    }
+    if (s.length > 0 && s.charCodeAt(s.length - 1) === 32) {
+      const next = node.nextSibling;
+      if (!hadTrailing || !isInlineSibling(next)) {
+        s = s.slice(0, -1);
+      }
+    }
+    return s;
   }
 
   function inferTextStyle(el) {
@@ -804,10 +887,10 @@
         const bounds = relBounds(r, parentRect);
         // Inherit text styling from the parent element.
         const style = inferTextStyle(el);
-        // Collapse whitespace the same way the browser does, so Figma renders
-        // the same glyph string the user saw on the page (no leading newline /
-        // tab indentation pushing the text down or to the right).
-        const characters = normalizeTextContent(raw, el);
+        // Collapse whitespace the same way the browser does, preserving
+        // significant inter-sibling spaces, so Figma renders the same glyph
+        // string the user saw on the page.
+        const characters = normalizeTextContent(child, el);
         if (!characters) continue;
         out.push({
           type: 'text',

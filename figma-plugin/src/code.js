@@ -661,8 +661,9 @@ function applyFrameStyle(frame, style, bounds) {
       if (style.stroke.align)  try { frame.strokeAlign  = style.stroke.align;  } catch (_) {}
     }
   } else if (style.strokeSides && style.strokeSides.paint) {
-    // Per-side stroke widths — used for table cells/rows inside a
-    // border-collapse table so we don't double-paint shared edges.
+    // Per-side stroke widths — used for tabs (no bottom border so the active
+    // tab merges with the panel) and for cells inside a border-collapse table
+    // (so we don't double-paint shared edges).
     const sp = paintFromIr(style.strokeSides.paint);
     if (sp) {
       frame.strokes = [sp];
@@ -679,13 +680,25 @@ function applyFrameStyle(frame, style, bounds) {
     }
   }
 
-  // Radius (px or percent)
+  // Dashed / dotted border textures
+  if (style.dashPattern && Array.isArray(style.dashPattern)) {
+    try { frame.dashPattern = style.dashPattern; } catch (_) {}
+  }
+
+  // Radius (px / percent / per-corner)
   if (style.radius) {
     if (style.radius.percent != null && bounds) {
       const half = Math.min(bounds.w, bounds.h) * (style.radius.percent / 100);
       try { frame.cornerRadius = half; } catch (_) {}
     } else if (style.radius.px != null) {
       try { frame.cornerRadius = style.radius.px; } catch (_) {}
+    } else if (style.radius.corners) {
+      // Tabs and other directional shapes round only some corners.
+      const c = style.radius.corners;
+      try { frame.topLeftRadius     = c.tl || 0; } catch (_) {}
+      try { frame.topRightRadius    = c.tr || 0; } catch (_) {}
+      try { frame.bottomRightRadius = c.br || 0; } catch (_) {}
+      try { frame.bottomLeftRadius  = c.bl || 0; } catch (_) {}
     }
   }
 
