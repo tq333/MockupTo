@@ -417,7 +417,64 @@ async function renderFrame(ir, parent, isRoot) {
       await renderNode(c, frame, false);
     }
   }
+
+  // Tier-1 Auto Layout: flip the frame after children are attached so Figma
+  // re-flows them. Done last so we don't fight applyFrameStyle's `frame.fills`
+  // resets and so children already exist for sizing inference.
+  if (!isRoot && ir.layout && ir.layout.mode === 'auto') {
+    applyAutoLayout(frame, ir.layout);
+    state.stats.layoutAuto = (state.stats.layoutAuto || 0) + 1;
+  }
   return frame;
+}
+
+/**
+ * Convert an absolute-positioned frame into an Auto Layout one matching the
+ * captured CSS flex container. Called only for atomic components (≤5 IR
+ * descendants) so any layout drift stays localized to a single button / tag.
+ *
+ * Sequence matters: Figma re-positions children the moment we set
+ * `layoutMode`, so we (1) flip mode, (2) set padding & spacing, (3) set per-
+ * child sizing (text → HUG so the frame grows when chars are edited), and
+ * (4) finally HUG the frame itself horizontally / vertically.
+ */
+function applyAutoLayout(frame, layout) {
+  try { frame.layoutMode = layout.direction || 'HORIZONTAL'; } catch (_) { return; }
+  try { frame.itemSpacing      = layout.gap || 0; } catch (_) {}
+  try { frame.paddingTop       = layout.padding && layout.padding.top    || 0; } catch (_) {}
+  try { frame.paddingRight     = layout.padding && layout.padding.right  || 0; } catch (_) {}
+  try { frame.paddingBottom    = layout.padding && layout.padding.bottom || 0; } catch (_) {}
+  try { frame.paddingLeft      = layout.padding && layout.padding.left   || 0; } catch (_) {}
+  if (layout.primaryAlign) {
+    try { frame.primaryAxisAlignItems = layout.primaryAlign; } catch (_) {}
+  }
+  if (layout.counterAlign) {
+    try { frame.counterAxisAlignItems = layout.counterAlign; } catch (_) {}
+  }
+
+  // Per-child sizing: text hugs both axes so editing characters resizes the
+  // parent. Frame children stay at their captured fixed size — we don't have
+  // enough signal yet to know which should FILL (Tier 2 territory).
+  for (const child of frame.children) {
+    if (child.type === 'TEXT') {
+      try { child.textAutoResize = 'WIDTH_AND_HEIGHT'; } catch (_) {}
+      try { child.layoutSizingHorizontal = 'HUG'; } catch (_) {}
+      try { child.layoutSizingVertical   = 'HUG'; } catch (_) {}
+    } else {
+      try { child.layoutSizingHorizontal = 'FIXED'; } catch (_) {}
+      try { child.layoutSizingVertical   = 'FIXED'; } catch (_) {}
+    }
+  }
+
+  // Frame sizing: HUG so the wrapper grows / shrinks with its children.
+  // Must be set after child sizing is decided, otherwise Figma rejects HUG
+  // when a child still wants FILL.
+  if (layout.hug && layout.hug.horizontal) {
+    try { frame.layoutSizingHorizontal = 'HUG'; } catch (_) {}
+  }
+  if (layout.hug && layout.hug.vertical) {
+    try { frame.layoutSizingVertical = 'HUG'; } catch (_) {}
+  }
 }
 
 async function renderText(ir, parent) {

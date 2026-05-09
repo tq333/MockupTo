@@ -1,5 +1,5 @@
 // Mockup Sync · capture bundle
-// Generated: 2026-05-09T08:02:06.340Z
+// Generated: 2026-05-09T08:12:11.908Z
 // Source: chrome-extension/src/capture.src.js
 // Mapping: mockup-kit.mapping.json (v1.0.0)
 // DO NOT EDIT — regenerate with `npm run build`
@@ -684,6 +684,7 @@
     if (node._isSvg) return node;             // keep SVG placeholder intact
     if (node._iconFallback) return node;      // keep icon placeholders intact
     if (node.style) return node;              // any visual chrome → keep
+    if (node.layout) return node;             // Auto Layout container → keep
     if (!node.children || node.children.length !== 1) return node;
     const child = node.children[0];
     if (!child || !child.bounds || !node.bounds) return node;
@@ -883,10 +884,111 @@
       };
     }
     flattenTextWrappers(node);
+    // Tier-1 Auto Layout: opt in atomic flex containers (buttons, tags, …).
+    // Done after flatten so descendant counts reflect the IR Figma will see.
+    const al = inferAtomicAutoLayout(el, node);
+    if (al) {
+      node.layout = al.layout;
+      stats.layoutAuto = (stats.layoutAuto || 0) + 1;
+    }
     return maybeCollapse(node);
   }
 
-  /** Walk child *nodes* of an element: produce IR nodes for elements and #text. */
+  /** Total IR descendants (frames + text + image, recursive). Used to gate
+   *  Auto Layout to small atomic components and avoid converting whole
+   *  pages where margin/grid behaviour can't round-trip. */
+  function countIrDescendants(node) {
+    if (!node || !node.children) return 0;
+    let n = 0;
+    for (const c of node.children) n += 1 + countIrDescendants(c);
+    return n;
+  }
+
+  /**
+   * Tier-1 Auto Layout detection.
+   *
+   * Returns an `{ layout }` object when `el` is an atomic flex container we
+   * trust to round-trip into Figma Auto Layout, or `null` to leave the node
+   * as absolute-positioned. We deliberately stay conservative — page-level
+   * flex / grid / block layout still goes through pixel-perfect absolute
+   * positioning, because:
+   *   - margin-collapse, grid templates and `flex-basis: auto` heuristics
+   *     don't have direct Auto Layout equivalents;
+   *   - if Figma re-computes the layout differently from the browser, the
+   *     whole page can drift several pixels;
+   *   - the user's main pain point is "edit the button text, watch the
+   *     button hug" — which only needs leaf-level Auto Layout.
+   *
+   * Conditions (all must hold):
+   *   1. `display: flex` or `inline-flex` (so the children's order matters
+   *      and gap/padding are well-defined).
+   *   2. ≤ 5 IR descendants — buttons / tags / chips / breadcrumb-items /
+   *      tab-items typically come in at 1-3.
+   *   3. No `position: absolute/fixed` child — Tier 2 territory.
+   *   4. `flex-wrap` is not `wrap` (Figma wrap support is uneven across
+   *      plugin API versions; defer wrapping to Tier 2).
+   */
+  function inferAtomicAutoLayout(el, irNode) {
+    let cs;
+    try { cs = getComputedStyle(el); } catch (_) { return null; }
+    const disp = cs.display || '';
+    if (disp !== 'flex' && disp !== 'inline-flex') return null;
+    if ((cs.flexWrap || '') === 'wrap') return null;
+
+    const totalDesc = countIrDescendants(irNode);
+    if (totalDesc === 0 || totalDesc > 5) return null;
+
+    // Reject if any DOM child uses absolute/fixed positioning.
+    for (const child of el.children) {
+      let ccs;
+      try { ccs = getComputedStyle(child); } catch (_) { continue; }
+      const pos = ccs.position || '';
+      if (pos === 'absolute' || pos === 'fixed' || pos === 'sticky') return null;
+    }
+
+    const direction = (cs.flexDirection || 'row').indexOf('column') === 0
+      ? 'VERTICAL' : 'HORIZONTAL';
+
+    // Resolve `gap` — for row layout the primary axis is column-gap,
+    // for column layout it's row-gap. Browsers compute `cs.gap` to the
+    // longhand pair so reading both as a fallback is safe.
+    let gap = parsePx(cs.columnGap || cs.gap);
+    if (direction === 'VERTICAL') gap = parsePx(cs.rowGap || cs.gap);
+
+    const justify = cs.justifyContent || 'flex-start';
+    const align   = cs.alignItems     || 'stretch';
+    const primary =
+      justify === 'center'         ? 'CENTER' :
+      justify === 'flex-end'       ? 'MAX'    :
+      justify === 'space-between'  ? 'SPACE_BETWEEN' :
+      justify === 'space-around'   ? 'SPACE_BETWEEN' : // closest analogue
+      justify === 'space-evenly'   ? 'SPACE_BETWEEN' : 'MIN';
+    const counter =
+      align === 'center'    ? 'CENTER' :
+      align === 'flex-end'  ? 'MAX'    : 'MIN'; // 'stretch' falls through to MIN; renderer
+                                                // handles stretch via FILL sizing instead
+
+    return {
+      layout: {
+        mode: 'auto',
+        direction,
+        gap: Number.isFinite(gap) ? gap : 0,
+        padding: {
+          top:    parsePx(cs.paddingTop),
+          right:  parsePx(cs.paddingRight),
+          bottom: parsePx(cs.paddingBottom),
+          left:   parsePx(cs.paddingLeft),
+        },
+        primaryAlign: primary,
+        counterAlign: counter,
+        // HUG horizontally so the frame grows with text on the primary axis;
+        // HUG vertically too so multi-line text doesn't get clipped.
+        hug: { horizontal: true, vertical: true },
+      },
+    };
+  }
+
+
   function walkChildren(el, parentRect) {
     const out = [];
     for (const child of el.childNodes) {
