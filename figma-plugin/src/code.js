@@ -422,7 +422,7 @@ async function renderFrame(ir, parent, isRoot) {
   // re-flows them. Done last so we don't fight applyFrameStyle's `frame.fills`
   // resets and so children already exist for sizing inference.
   if (!isRoot && ir.layout && ir.layout.mode === 'auto') {
-    applyAutoLayout(frame, ir.layout);
+    applyAutoLayout(frame, ir.layout, ir.bounds);
     state.stats.layoutAuto = (state.stats.layoutAuto || 0) + 1;
   }
   return frame;
@@ -436,9 +436,10 @@ async function renderFrame(ir, parent, isRoot) {
  * Sequence matters: Figma re-positions children the moment we set
  * `layoutMode`, so we (1) flip mode, (2) set padding & spacing, (3) set per-
  * child sizing (text → HUG so the frame grows when chars are edited), and
- * (4) finally HUG the frame itself horizontally / vertically.
+ * (4) finally HUG the frame itself horizontally / vertically — falling back
+ * to FIXED + the captured bounds when HUG would shrink a stretched container.
  */
-function applyAutoLayout(frame, layout) {
+function applyAutoLayout(frame, layout, bounds) {
   try { frame.layoutMode = layout.direction || 'HORIZONTAL'; } catch (_) { return; }
   try { frame.itemSpacing      = layout.gap || 0; } catch (_) {}
   try { frame.paddingTop       = layout.padding && layout.padding.top    || 0; } catch (_) {}
@@ -453,8 +454,10 @@ function applyAutoLayout(frame, layout) {
   }
 
   // Per-child sizing: text hugs both axes so editing characters resizes the
-  // parent. Frame children stay at their captured fixed size — we don't have
-  // enough signal yet to know which should FILL (Tier 2 territory).
+  // parent (when the parent is HUG) and so text doesn't FILL and steal
+  // space from siblings (when the parent is FIXED with `space-between`).
+  // Frame children stay at their captured fixed size — Tier 2 will infer
+  // FILL via flex-grow.
   for (const child of frame.children) {
     if (child.type === 'TEXT') {
       try { child.textAutoResize = 'WIDTH_AND_HEIGHT'; } catch (_) {}
@@ -466,14 +469,25 @@ function applyAutoLayout(frame, layout) {
     }
   }
 
-  // Frame sizing: HUG so the wrapper grows / shrinks with its children.
-  // Must be set after child sizing is decided, otherwise Figma rejects HUG
-  // when a child still wants FILL.
-  if (layout.hug && layout.hug.horizontal) {
+  // Frame sizing: HUG when the captured width matches "children + padding +
+  // gap"; otherwise FIXED back to the captured bounds so stretched
+  // containers (browser bars, justify:space-between rows, navbar slots) keep
+  // their full width. Resize is needed because flipping layoutMode may have
+  // shrunk the frame while Figma re-laid the children out.
+  const hugH = !!(layout.hug && layout.hug.horizontal);
+  const hugV = !!(layout.hug && layout.hug.vertical);
+
+  if (hugH) {
     try { frame.layoutSizingHorizontal = 'HUG'; } catch (_) {}
+  } else {
+    try { frame.layoutSizingHorizontal = 'FIXED'; } catch (_) {}
+    if (bounds && bounds.w) try { frame.resize(bounds.w, frame.height); } catch (_) {}
   }
-  if (layout.hug && layout.hug.vertical) {
+  if (hugV) {
     try { frame.layoutSizingVertical = 'HUG'; } catch (_) {}
+  } else {
+    try { frame.layoutSizingVertical = 'FIXED'; } catch (_) {}
+    if (bounds && bounds.h) try { frame.resize(frame.width, bounds.h); } catch (_) {}
   }
 }
 

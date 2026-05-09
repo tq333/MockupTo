@@ -1,5 +1,5 @@
 // Mockup Sync · capture bundle
-// Generated: 2026-05-09T08:12:11.908Z
+// Generated: 2026-05-09T08:21:05.570Z
 // Source: chrome-extension/src/capture.src.js
 // Mapping: mockup-kit.mapping.json (v1.0.0)
 // DO NOT EDIT — regenerate with `npm run build`
@@ -954,6 +954,14 @@
     // longhand pair so reading both as a fallback is safe.
     let gap = parsePx(cs.columnGap || cs.gap);
     if (direction === 'VERTICAL') gap = parsePx(cs.rowGap || cs.gap);
+    if (!Number.isFinite(gap)) gap = 0;
+
+    const padding = {
+      top:    parsePx(cs.paddingTop),
+      right:  parsePx(cs.paddingRight),
+      bottom: parsePx(cs.paddingBottom),
+      left:   parsePx(cs.paddingLeft),
+    };
 
     const justify = cs.justifyContent || 'flex-start';
     const align   = cs.alignItems     || 'stretch';
@@ -968,22 +976,45 @@
       align === 'flex-end'  ? 'MAX'    : 'MIN'; // 'stretch' falls through to MIN; renderer
                                                 // handles stretch via FILL sizing instead
 
+    // ── Hug-vs-Fixed decision ──────────────────────────────────────────
+    // HUG can only honour the captured bounds when the bounds are roughly
+    // "children stacked + gaps + padding". When a child has `flex: 1` or
+    // the container is stretched by its parent (e.g. browser-bar inside a
+    // 100%-width column), the captured bounds are larger and HUG would
+    // shrink the frame back to content, breaking layout (`space-between`
+    // collapses, `flex: 1` siblings cluster together).
+    let sumW = 0, sumH = 0, maxW = 0, maxH = 0;
+    for (const c of irNode.children) {
+      const cb = c && c.bounds;
+      if (!cb) continue;
+      sumW += cb.w; sumH += cb.h;
+      if (cb.w > maxW) maxW = cb.w;
+      if (cb.h > maxH) maxH = cb.h;
+    }
+    const childCount = irNode.children.length;
+    const gapTotal = gap * Math.max(0, childCount - 1);
+    const padX = padding.left + padding.right;
+    const padY = padding.top + padding.bottom;
+    const expectedW = direction === 'HORIZONTAL' ? sumW + gapTotal + padX : maxW + padX;
+    const expectedH = direction === 'VERTICAL'   ? sumH + gapTotal + padY : maxH + padY;
+
+    const TOL = 4; // px slack for sub-pixel rounding & 1px borders
+    const hugH = Math.abs((irNode.bounds.w || 0) - expectedW) <= TOL;
+    const hugV = Math.abs((irNode.bounds.h || 0) - expectedH) <= TOL;
+
     return {
       layout: {
         mode: 'auto',
         direction,
-        gap: Number.isFinite(gap) ? gap : 0,
-        padding: {
-          top:    parsePx(cs.paddingTop),
-          right:  parsePx(cs.paddingRight),
-          bottom: parsePx(cs.paddingBottom),
-          left:   parsePx(cs.paddingLeft),
-        },
+        gap,
+        padding,
         primaryAlign: primary,
         counterAlign: counter,
-        // HUG horizontally so the frame grows with text on the primary axis;
-        // HUG vertically too so multi-line text doesn't get clipped.
-        hug: { horizontal: true, vertical: true },
+        // Per-axis HUG. When false the renderer keeps the captured bounds
+        // (FIXED) on that axis, so containers that are visually "wider than
+        // their content" — browser bars, justify-space-between rows, navbar
+        // right-aligned slots — survive intact.
+        hug: { horizontal: hugH, vertical: hugV },
       },
     };
   }
