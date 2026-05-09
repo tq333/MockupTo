@@ -1,0 +1,12 @@
+{
+  "name": "mockup-sync-chrome-extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Chrome MV3 extension for Mockup Sync. Captures Mockup Kit H5 pages into IR JSON for the Figma plugin.",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "rebuild": "node scripts/build.mjs",
+    "check": "node -c src/capture.src.js && echo '\u2713 syntax OK'"
+  }
+}

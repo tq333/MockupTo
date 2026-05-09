@@ -1,0 +1,493 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://mockup-sync/schema/ir.v1.schema.json",
+  "title": "Mockup Sync IR (Intermediate Representation) v1",
+  "description": "Contract between browser-side bookmarklet (producer) and Figma plugin (consumer). Produced by capturing a Mockup Kit H5 demo; consumed to reconstruct a Figma frame tree bound to tokens and component instances.",
+  "type": "object",
+  "required": ["version", "meta", "root"],
+  "additionalProperties": false,
+
+  "properties": {
+    "version": {
+      "const": "1.0.0",
+      "description": "IR schema version. Bump when breaking changes are introduced."
+    },
+
+    "meta": {
+      "type": "object",
+      "required": ["capturedAt", "viewport", "mappingVersion"],
+      "additionalProperties": true,
+      "properties": {
+        "capturedAt": { "type": "string", "format": "date-time" },
+        "sourceUrl":  { "type": "string", "description": "Page URL at capture time (informational)." },
+        "title":      { "type": "string", "description": "document.title at capture time (informational)." },
+        "viewport":   {
+          "type": "object",
+          "required": ["w", "h"],
+          "properties": {
+            "w": { "type": "number", "minimum": 1 },
+            "h": { "type": "number", "minimum": 1 },
+            "dpr": { "type": "number", "default": 1 }
+          }
+        },
+        "mappingVersion": {
+          "type": "string",
+          "description": "Value of spec.version in mockup-kit.mapping.json used for capture. Figma plugin may refuse import on major mismatch."
+        },
+        "stats": {
+          "type": "object",
+          "description": "Summary produced by the capture pass; used to render the import summary panel.",
+          "properties": {
+            "nodesTotal":        { "type": "integer", "minimum": 0 },
+            "instancesMatched":  { "type": "integer", "minimum": 0 },
+            "tokensBoundColor":  { "type": "integer", "minimum": 0 },
+            "tokensBoundText":   { "type": "integer", "minimum": 0 },
+            "unmapped":          {
+              "type": "array",
+              "items": { "$ref": "#/definitions/UnmappedReport" }
+            }
+          }
+        }
+      }
+    },
+
+    "root": { "$ref": "#/definitions/Node" }
+  },
+
+  "definitions": {
+
+    "Node": {
+      "description": "A node in the tree. Discriminated by `type`.",
+      "oneOf": [
+        { "$ref": "#/definitions/FrameNode" },
+        { "$ref": "#/definitions/TextNode" },
+        { "$ref": "#/definitions/InstanceNode" },
+        { "$ref": "#/definitions/IconNode" },
+        { "$ref": "#/definitions/ImageNode" }
+      ]
+    },
+
+    "CommonNodeProps": {
+      "type": "object",
+      "properties": {
+        "name":   { "type": "string", "description": "Label for Figma layers panel. Optional; defaults derive from type/class." },
+        "layout": { "$ref": "#/definitions/Layout" },
+        "bounds": { "$ref": "#/definitions/Bounds",  "description": "Required when layout.mode === 'NONE' or omitted; ignored when Auto Layout is applied by the parent." },
+        "source": { "$ref": "#/definitions/SourceTrace", "description": "Optional breadcrumb back to the HTML element, for debugging only." }
+      }
+    },
+
+    "FrameNode": {
+      "allOf": [
+        { "$ref": "#/definitions/CommonNodeProps" },
+        {
+          "type": "object",
+          "required": ["type"],
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "frame" },
+            "name": {},
+            "layout": {},
+            "bounds": {},
+            "source": {},
+            "style":    { "$ref": "#/definitions/FrameStyle" },
+            "children": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/Node" },
+              "default": []
+            }
+          }
+        }
+      ]
+    },
+
+    "TextNode": {
+      "allOf": [
+        { "$ref": "#/definitions/CommonNodeProps" },
+        {
+          "type": "object",
+          "required": ["type", "characters"],
+          "additionalProperties": false,
+          "properties": {
+            "type":       { "const": "text" },
+            "name":       {},
+            "layout":     {},
+            "bounds":     {},
+            "source":     {},
+            "characters": { "type": "string" },
+            "style":      { "$ref": "#/definitions/TextStyle" }
+          }
+        }
+      ]
+    },
+
+    "InstanceNode": {
+      "description": "A node that matched one of mapping.components and will be materialized as a Figma component instance. Its visual content is NOT described as children; instead it's declared via `slots`.",
+      "allOf": [
+        { "$ref": "#/definitions/CommonNodeProps" },
+        {
+          "type": "object",
+          "required": ["type", "ruleId", "componentName"],
+          "additionalProperties": false,
+          "properties": {
+            "type":          { "const": "instance" },
+            "name":          {},
+            "layout":        {},
+            "bounds":        {},
+            "source":        {},
+            "ruleId":        {
+              "type": "string",
+              "description": "= mapping.components[*].id. Must exist in the mapping used by the Figma plugin."
+            },
+            "componentName": {
+              "type": "string",
+              "description": "= mapping.components[*].figmaComponent. Used to findByName in the Figma library."
+            },
+            "variants":      {
+              "type": "object",
+              "description": "Variant property values, derived from variantRules. Keys and values must match mapping.components[*].variantProperties.",
+              "additionalProperties": { "type": "string" }
+            },
+            "slots":         {
+              "type": "object",
+              "description": "Slot values extracted per mapping.components[*].slots. Key is the slot name; value describes what to write into the matching Figma component property.",
+              "additionalProperties": { "$ref": "#/definitions/SlotValue" }
+            }
+          }
+        }
+      ]
+    },
+
+    "IconNode": {
+      "description": "A standalone iconoir glyph outside of any matched component slot (e.g. an inline icon used for decoration). Figma plugin should createInstance of the icon component if present, else render as text fallback.",
+      "allOf": [
+        { "$ref": "#/definitions/CommonNodeProps" },
+        {
+          "type": "object",
+          "required": ["type", "iconName"],
+          "additionalProperties": false,
+          "properties": {
+            "type":     { "const": "icon" },
+            "name":     {},
+            "layout":   {},
+            "bounds":   {},
+            "source":   {},
+            "iconName": { "type": "string", "description": "= iconoir glyph name without the 'iconoir-' prefix, e.g. 'arrow-right'." },
+            "style":    { "$ref": "#/definitions/TextStyle", "description": "Used for color/size fallbacks if the icon component is missing in Figma." }
+          }
+        }
+      ]
+    },
+
+    "ImageNode": {
+      "allOf": [
+        { "$ref": "#/definitions/CommonNodeProps" },
+        {
+          "type": "object",
+          "required": ["type"],
+          "additionalProperties": false,
+          "properties": {
+            "type":    { "const": "image" },
+            "name":    {},
+            "layout":  {},
+            "bounds":  {},
+            "source":  {},
+            "source":  {},
+            "dataUrl": { "type": "string", "description": "base64 data URL if fetched successfully. Missing => render placeholder frame with `alt`." },
+            "alt":     { "type": "string" },
+            "natural": {
+              "type": "object",
+              "properties": {
+                "w": { "type": "number" },
+                "h": { "type": "number" }
+              }
+            }
+          }
+        }
+      ]
+    },
+
+    "Layout": {
+      "type": "object",
+      "description": "Auto Layout description. When absent or mode === 'NONE', children are placed by their bounds (absolute x/y).",
+      "additionalProperties": false,
+      "properties": {
+        "mode":    { "enum": ["NONE", "HORIZONTAL", "VERTICAL"], "default": "NONE" },
+        "gap":     { "$ref": "#/definitions/SizingValue" },
+        "padding": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "top":    { "$ref": "#/definitions/SizingValue" },
+            "right":  { "$ref": "#/definitions/SizingValue" },
+            "bottom": { "$ref": "#/definitions/SizingValue" },
+            "left":   { "$ref": "#/definitions/SizingValue" }
+          }
+        },
+        "primaryAxisAlign": { "enum": ["MIN", "CENTER", "MAX", "SPACE_BETWEEN"] },
+        "counterAxisAlign": { "enum": ["MIN", "CENTER", "MAX", "BASELINE"] },
+        "sizing": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "w": { "$ref": "#/definitions/SizingAxis" },
+            "h": { "$ref": "#/definitions/SizingAxis" }
+          }
+        }
+      }
+    },
+
+    "SizingAxis": {
+      "description": "Figma frame sizing on one axis.",
+      "oneOf": [
+        { "type": "object", "additionalProperties": false, "properties": { "mode": { "const": "FIXED" }, "value": { "type": "number", "minimum": 0 } }, "required": ["mode", "value"] },
+        { "type": "object", "additionalProperties": false, "properties": { "mode": { "const": "HUG" } }, "required": ["mode"] },
+        { "type": "object", "additionalProperties": false, "properties": { "mode": { "const": "FILL" } }, "required": ["mode"] }
+      ]
+    },
+
+    "Bounds": {
+      "type": "object",
+      "description": "Position and size relative to the parent frame. Only used when Auto Layout is disabled.",
+      "required": ["x", "y", "w", "h"],
+      "additionalProperties": false,
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "w": { "type": "number", "minimum": 0 },
+        "h": { "type": "number", "minimum": 0 }
+      }
+    },
+
+    "FrameStyle": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fill":    { "$ref": "#/definitions/PaintValue" },
+        "stroke":  { "$ref": "#/definitions/StrokeValue" },
+        "radius":  { "$ref": "#/definitions/SizingValue" },
+        "shadow":  { "$ref": "#/definitions/EffectValue" },
+        "opacity": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+
+    "TextStyle": {
+      "type": "object",
+      "description": "Text styling. Prefer textStyle (bound to a Figma text style) over individual fields.",
+      "additionalProperties": false,
+      "properties": {
+        "textStyle":     { "type": "string", "description": "Name of a Figma text style to bind via textStyleId. Resolution uses mapping.tokens.typography." },
+        "fill":          { "$ref": "#/definitions/PaintValue" },
+        "textAlign":     { "enum": ["LEFT", "CENTER", "RIGHT", "JUSTIFIED"] },
+        "textCase":      { "enum": ["ORIGINAL", "UPPER", "LOWER", "TITLE"] },
+        "textDecoration":{ "enum": ["NONE", "UNDERLINE", "STRIKETHROUGH"] },
+        "_raw": {
+          "type": "object",
+          "description": "Fallback raw values used when textStyle lookup misses. Figma plugin applies these one-by-one.",
+          "additionalProperties": false,
+          "properties": {
+            "fontFamily":    { "type": "string" },
+            "fontSize":      { "type": "number" },
+            "fontWeight":    { "type": "number" },
+            "lineHeight":    { "oneOf": [{ "type": "number" }, { "type": "string", "description": "e.g. '150%'" }] },
+            "letterSpacing": { "type": "number" }
+          }
+        },
+        "_miss": { "$ref": "#/definitions/MissFlag" }
+      }
+    },
+
+    "PaintValue": {
+      "description": "A solid paint. Either bound to a Figma variable or a literal. `null` means no fill.",
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["var"],
+          "properties": {
+            "var":     { "type": "string", "description": "Figma variable name, e.g. 'color/ink'." },
+            "opacity": { "type": "number", "minimum": 0, "maximum": 1 },
+            "_miss":   { "$ref": "#/definitions/MissFlag" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["hex"],
+          "properties": {
+            "hex":     { "type": "string", "pattern": "^#[0-9a-fA-F]{3,8}$" },
+            "opacity": { "type": "number", "minimum": 0, "maximum": 1 },
+            "_miss":   { "$ref": "#/definitions/MissFlag", "description": "If true, capture tried to bind a token but failed." }
+          }
+        }
+      ]
+    },
+
+    "StrokeValue": {
+      "description": "A stroke (border). Same paint structure + weight/align.",
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["paint", "weight"],
+          "properties": {
+            "paint":  { "$ref": "#/definitions/PaintValue" },
+            "weight": { "$ref": "#/definitions/SizingValue" },
+            "align":  { "enum": ["INSIDE", "CENTER", "OUTSIDE"], "default": "INSIDE" }
+          }
+        }
+      ]
+    },
+
+    "EffectValue": {
+      "description": "Drop shadow / inner shadow effect. Prefer effectStyle binding over raw params.",
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["effectStyle"],
+          "properties": {
+            "effectStyle": { "type": "string", "description": "Name of a Figma effect style, e.g. 'shadow/default'." },
+            "_miss":       { "$ref": "#/definitions/MissFlag" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "x", "y", "blur", "spread"],
+          "properties": {
+            "type":   { "enum": ["DROP_SHADOW", "INNER_SHADOW"] },
+            "x":      { "type": "number" },
+            "y":      { "type": "number" },
+            "blur":   { "type": "number", "minimum": 0 },
+            "spread": { "type": "number" },
+            "color":  { "$ref": "#/definitions/PaintValue" }
+          }
+        }
+      ]
+    },
+
+    "SizingValue": {
+      "description": "A number value that may be bound to a Figma spacing/radius variable.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["var"],
+          "properties": {
+            "var":   { "type": "string", "description": "Figma variable name, e.g. 'spacing/4' or 'radius/default'." },
+            "_miss": { "$ref": "#/definitions/MissFlag" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["px"],
+          "properties": {
+            "px":    { "type": "number" },
+            "_miss": { "$ref": "#/definitions/MissFlag" }
+          }
+        }
+      ]
+    },
+
+    "SlotValue": {
+      "description": "The extracted value for one slot declared in mapping.components[*].slots. Matches the slot's declared type.",
+      "oneOf": [
+        {
+          "description": "Text slot (type: text).",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "value"],
+          "properties": {
+            "type":  { "const": "text" },
+            "value": { "type": "string" },
+            "isPlaceholder": { "type": "boolean", "default": false, "description": "True when value came from placeholderAttr; Figma plugin may style it muted." }
+          }
+        },
+        {
+          "description": "Icon slot (type: icon). Produces an INSTANCE_SWAP on the target Figma property.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "iconName"],
+          "properties": {
+            "type":     { "const": "icon" },
+            "iconName": { "type": "string", "description": "Iconoir glyph name without prefix, e.g. 'arrow-right'." }
+          }
+        },
+        {
+          "description": "Boolean slot (type: boolean). Used for variant hint slots like showIcon.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "value"],
+          "properties": {
+            "type":  { "const": "boolean" },
+            "value": { "type": "boolean" }
+          }
+        },
+        {
+          "description": "Child node slot (type: child). Nests a full IR subtree. Figma plugin must locate a compatible nested instance property or fall back to stacking a frame on top.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "node"],
+          "properties": {
+            "type": { "const": "child" },
+            "node": { "$ref": "#/definitions/Node" }
+          }
+        },
+        {
+          "description": "Child list slot (type: childList). Sequence of IR subtrees, e.g. tabs → tab-item[*].",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "nodes"],
+          "properties": {
+            "type":  { "const": "childList" },
+            "nodes": { "type": "array", "items": { "$ref": "#/definitions/Node" } }
+          }
+        }
+      ]
+    },
+
+    "MissFlag": {
+      "type": "boolean",
+      "description": "True when a capture-time lookup failed (e.g. hex not in tokens). The value still carries a usable raw fallback. Figma plugin aggregates these for the summary panel."
+    },
+
+    "UnmappedReport": {
+      "type": "object",
+      "required": ["category", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "category": {
+          "enum": [
+            "unmapped-color",
+            "unmapped-spacing",
+            "unmapped-textstyle",
+            "unmapped-shadow",
+            "unmapped-icon",
+            "unrecognized-component",
+            "lossy-layout"
+          ]
+        },
+        "value":   { "type": "string" },
+        "count":   { "type": "integer", "minimum": 1, "default": 1 },
+        "example": { "$ref": "#/definitions/SourceTrace" }
+      }
+    },
+
+    "SourceTrace": {
+      "type": "object",
+      "description": "Debug-only breadcrumb back to the source element. May be stripped in production IR.",
+      "additionalProperties": false,
+      "properties": {
+        "tag":       { "type": "string" },
+        "classList": { "type": "array", "items": { "type": "string" } },
+        "id":        { "type": "string" },
+        "selector":  { "type": "string", "description": "A CSS path that can reproduce the element; e.g. generated by a finder lib." }
+      }
+    }
+  }
+}

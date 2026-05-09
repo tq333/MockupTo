@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Mockup Sync</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header class="hdr">
+    <div class="brand">
+      <img class="brand-icon" src="../icons/icon-128.png" alt="Mockup Sync">
+      <span class="brand-name">Mockup Sync</span>
+    </div>
+    <span class="hdr-version" id="extVersion"></span>
+  </header>
+
+  <section class="page-info">
+    <div class="page-title" id="pageTitle">—</div>
+    <div class="page-meta"  id="pageMeta">画布宽度：— px</div>
+  </section>
+
+  <button id="captureBtn" class="btn-primary">
+    <span class="btn-label">Capture this page</span>
+    <span class="btn-shortcut">⌘⇧M</span>
+  </button>
+
+  <section class="status hide" id="status"></section>
+
+  <footer class="ftr">
+    <span>IR schema v2 · <span id="mappingVer">mapping ?</span></span>
+    <a href="#" id="reloadBtn" title="Reload extension">↻</a>
+  </footer>
+
+  <script src="popup.js" type="module"></script>
+</body>
+</html>

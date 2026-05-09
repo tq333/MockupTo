@@ -1,0 +1,27 @@
+# OS / editor noise
+.DS_Store
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Build artifacts (capture.bundle.js IS committed — it's the runtime artifact
+# the Chrome extension ships; don't ignore it. But ignore intermediate dist/.)
+dist/
+tmp/
+*.log
+
+# Local capture / IR samples (large, ad-hoc; keep them out of git)
+*.ir.json
+captures/
+
+# Figma plugin local outputs
+figma-plugin/dist/

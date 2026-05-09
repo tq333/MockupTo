@@ -1,0 +1,100 @@
+/* Mockup Sync · popup styles (sync with mockup-kit visual language) */
+:root {
+  --ink:        #1a1a1a;
+  --bg:         #f5f3ee;
+  --surface:    #ffffff;
+  --muted:      #888888;
+  --light:      #e0ddd7;
+  --accent:     #0073cf;
+  --accent-bg:  #ddeeff;
+  --danger:     #cc3300;
+  --success:    #2e7d32;
+  --warn:       #e65100;
+  --yellow:     #ffd400;
+
+  --radius:     3px;
+  --border:     2px solid var(--ink);
+  --shadow-sm:  2px 2px 0 var(--ink);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 360px;
+  background: var(--bg);
+  font: 13px/1.4 'Balsamiq Sans', 'PingFang SC', system-ui, sans-serif;
+  color: var(--ink);
+}
+
+body { padding: 12px; }
+
+/* Header ──────────────────────────────────────────────────────────────────── */
+.hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+}
+.brand { display: flex; align-items: center; gap: 8px; }
+.brand-icon {
+  width: 22px; height: 22px;
+  border-radius: var(--radius);
+  display: block;
+  /* No border/shadow — the icon PNG itself carries the brand mark already. */
+}
+.brand-name { font-weight: 700; font-size: 14px; }
+.hdr-version { font-size: 11px; color: var(--muted); }
+
+/* Page info card ─────────────────────────────────────────────────────────── */
+.page-info {
+  background: var(--surface);
+  border: var(--border); border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 8px 10px; margin-bottom: 10px;
+}
+.page-title {
+  font-weight: 700; font-size: 13px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.page-meta {
+  font-size: 11px; color: var(--muted); margin-top: 2px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Capture button ────────────────────────────────────────────────────────── */
+.btn-primary {
+  width: 100%;
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--yellow); color: var(--ink);
+  border: var(--border); border-radius: var(--radius);
+  box-shadow: 3px 3px 0 var(--ink);
+  padding: 12px 14px;
+  font: 700 14px/1 'Balsamiq Sans', 'PingFang SC', system-ui, sans-serif;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+.btn-primary:hover  { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); }
+.btn-primary:active { transform: translate(1px, 1px);   box-shadow: 1px 1px 0 var(--ink); }
+.btn-primary:disabled { opacity: 0.6; cursor: wait; transform: none; box-shadow: var(--shadow-sm); }
+.btn-shortcut { font-size: 11px; opacity: 0.7; font-weight: 400; }
+
+/* Status ────────────────────────────────────────────────────────────────── */
+.status {
+  border: 2px solid; border-radius: var(--radius);
+  padding: 8px 10px; margin-bottom: 6px;
+  font-size: 12px; line-height: 1.6;
+  white-space: pre-wrap;
+}
+.status.ok   { border-color: var(--success); background: #e8f5e9; color: var(--ink); }
+.status.warn { border-color: var(--warn);    background: #fff3e0; color: var(--ink); }
+.status.err  { border-color: var(--danger);  background: #ffebee; color: var(--ink); }
+.status.busy { border-color: var(--accent);  background: var(--accent-bg); color: var(--ink); }
+.hide { display: none; }
+
+/* Footer ────────────────────────────────────────────────────────────────── */
+.ftr {
+  margin-top: 6px; padding-top: 8px;
+  border-top: 1px dashed var(--light);
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 10px; color: var(--muted);
+}
+.ftr a { color: var(--muted); text-decoration: none; font-size: 14px; }
+.ftr a:hover { color: var(--ink); }

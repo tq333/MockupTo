@@ -1,0 +1,140 @@
+{
+  "_comment_top": "Example IR produced by capturing this HTML fragment:",
+  "_comment_html": [
+    "<section class=\"card\" style=\"width: 320px\">",
+    "  <div class=\"card-body\">",
+    "    <div class=\"card-title\">Confirm Your Order</div>",
+    "    <p class=\"card-text\">Please review the details below before proceeding.</p>",
+    "    <button class=\"btn btn-primary btn-sm\">",
+    "      <i class=\"iconoir-arrow-right\"></i>",
+    "      Proceed",
+    "    </button>",
+    "  </div>",
+    "</section>"
+  ],
+
+  "version": "1.0.0",
+
+  "meta": {
+    "capturedAt": "2026-05-07T14:22:00.000Z",
+    "sourceUrl":  "http://localhost:3000/demo/checkout-card",
+    "title":      "Checkout · Mockup Kit",
+    "viewport":   { "w": 1440, "h": 900, "dpr": 2 },
+    "mappingVersion": "1.0.0",
+    "stats": {
+      "nodesTotal":       5,
+      "instancesMatched": 2,
+      "tokensBoundColor": 3,
+      "tokensBoundText":  2,
+      "unmapped": [
+        {
+          "category": "unmapped-color",
+          "value":    "#7d8aa0",
+          "count":    1,
+          "example":  { "tag": "p", "classList": ["card-text"] }
+        }
+      ]
+    }
+  },
+
+  "root": {
+    "type": "instance",
+    "name": "Card · card-1",
+    "ruleId": "card",
+    "componentName": "Card",
+    "variants": {
+      "withImage":  "false",
+      "withFooter": "false"
+    },
+    "layout": {
+      "sizing": {
+        "w": { "mode": "FIXED", "value": 320 },
+        "h": { "mode": "HUG" }
+      }
+    },
+    "slots": {
+      "body": {
+        "type": "child",
+        "node": {
+          "type": "frame",
+          "name": "card-body",
+          "layout": {
+            "mode": "VERTICAL",
+            "gap":     { "var": "spacing/3" },
+            "padding": {
+              "top":    { "var": "spacing/4" },
+              "right":  { "var": "spacing/4" },
+              "bottom": { "var": "spacing/4" },
+              "left":   { "var": "spacing/4" }
+            },
+            "counterAxisAlign": "MIN",
+            "sizing": { "w": { "mode": "FILL" }, "h": { "mode": "HUG" } }
+          },
+          "style": {
+            "fill": null
+          },
+          "children": [
+            {
+              "type": "text",
+              "name": "card-title",
+              "characters": "Confirm Your Order",
+              "layout": { "sizing": { "w": { "mode": "FILL" }, "h": { "mode": "HUG" } } },
+              "style": {
+                "textStyle": "text/lg-bold",
+                "fill":      { "var": "color/ink" },
+                "textAlign": "LEFT"
+              }
+            },
+
+            {
+              "type": "text",
+              "name": "card-text",
+              "characters": "Please review the details below before proceeding.",
+              "layout": { "sizing": { "w": { "mode": "FILL" }, "h": { "mode": "HUG" } } },
+              "style": {
+                "textStyle": "text/md-regular",
+                "fill": {
+                  "hex":   "#7d8aa0",
+                  "_miss": true
+                },
+                "textAlign": "LEFT",
+                "_raw": {
+                  "fontFamily": "Balsamiq Sans",
+                  "fontSize":   15,
+                  "fontWeight": 400,
+                  "lineHeight": "160%"
+                }
+              }
+            },
+
+            {
+              "type": "instance",
+              "name": "Button · Proceed",
+              "ruleId": "button",
+              "componentName": "Button",
+              "variants": {
+                "intent": "primary",
+                "size":   "sm",
+                "block":  "false",
+                "state":  "default"
+              },
+              "layout": {
+                "sizing": { "w": { "mode": "HUG" }, "h": { "mode": "HUG" } }
+              },
+              "slots": {
+                "icon": {
+                  "type": "icon",
+                  "iconName": "arrow-right"
+                },
+                "label": {
+                  "type": "text",
+                  "value": "Proceed"
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

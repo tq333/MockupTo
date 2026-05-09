@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Mockup Sync",
+  "version": "0.1.0",
+  "description": "Capture any Mockup Kit page into Mockup Sync IR JSON for the Figma plugin.",
+  "minimum_chrome_version": "102",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "clipboardWrite"
+  ],
+  "action": {
+    "default_title": "Mockup Sync — capture this page",
+    "default_popup": "popup/popup.html"
+  },
+  "commands": {
+    "capture-active-tab": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+M",
+        "mac": "Command+Shift+M"
+      },
+      "description": "Capture the active tab into Mockup Sync IR"
+    }
+  },
+  "background": {
+    "service_worker": "background/service-worker.js",
+    "type": "module"
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  }
+}

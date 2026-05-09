@@ -1,0 +1,2336 @@
+{
+  "$schema": "./mockup-kit.mapping.schema.json",
+  "spec": {
+    "name": "Mockup Kit · Balsamiq Style",
+    "version": "1.0.0",
+    "description": "HTML→Figma mapping ruleset. Drives the HTML-to-Figma plugin so that elements rendered with this CSS kit are converted into Figma nodes that bind to the corresponding Figma Variables, Text Styles and Component Instances.",
+    "fontFamily": {
+      "primary": "Balsamiq Sans",
+      "fallbacks": [
+        "PingFang SC",
+        "Hiragino Sans GB",
+        "Microsoft YaHei",
+        "WenQuanYi Micro Hei",
+        "sans-serif"
+      ]
+    },
+    "iconLibrary": {
+      "type": "iconfont",
+      "classPrefix": "iconoir-",
+      "figmaComponentNamespace": "Icon"
+    },
+    "matchingPolicy": {
+      "colorReverseLookup": "exact-hex",
+      "spacingReverseLookup": "exact-px",
+      "fallbackOnMiss": "rawValue+report",
+      "componentDetection": "class-based"
+    }
+  },
+  "tokens": {
+    "colors": [
+      {
+        "cssVar": "--color-ink",
+        "value": "#1a1a1a",
+        "figmaVariable": "color/ink"
+      },
+      {
+        "cssVar": "--color-bg",
+        "value": "#f5f3ee",
+        "figmaVariable": "color/bg"
+      },
+      {
+        "cssVar": "--color-surface",
+        "value": "#ffffff",
+        "figmaVariable": "color/surface"
+      },
+      {
+        "cssVar": "--color-border",
+        "value": "#1a1a1a",
+        "figmaVariable": "color/border",
+        "aliasOf": "color/ink"
+      },
+      {
+        "cssVar": "--color-muted",
+        "value": "#888888",
+        "figmaVariable": "color/muted"
+      },
+      {
+        "cssVar": "--color-light",
+        "value": "#e0ddd7",
+        "figmaVariable": "color/light"
+      },
+      {
+        "cssVar": "--color-accent",
+        "value": "#0073cf",
+        "figmaVariable": "color/accent"
+      },
+      {
+        "cssVar": "--color-accent-bg",
+        "value": "#ddeeff",
+        "figmaVariable": "color/accent-bg"
+      },
+      {
+        "cssVar": "--color-danger",
+        "value": "#cc3300",
+        "figmaVariable": "color/danger"
+      },
+      {
+        "cssVar": "--color-success",
+        "value": "#2e7d32",
+        "figmaVariable": "color/success"
+      },
+      {
+        "cssVar": "--color-warning",
+        "value": "#e65100",
+        "figmaVariable": "color/warning"
+      },
+      {
+        "value": "#fff0ec",
+        "figmaVariable": "color/danger-bg",
+        "comment": "literal usage in .tag-danger / .alert-danger"
+      },
+      {
+        "value": "#e8f5e9",
+        "figmaVariable": "color/success-bg",
+        "comment": "literal usage in .tag-success / .alert-success"
+      },
+      {
+        "value": "#fff3e0",
+        "figmaVariable": "color/warning-bg",
+        "comment": "literal usage in .alert-warning"
+      }
+    ],
+    "spacing": [
+      {
+        "cssVar": "--sp1",
+        "value": 4,
+        "figmaVariable": "spacing/1"
+      },
+      {
+        "cssVar": "--sp2",
+        "value": 8,
+        "figmaVariable": "spacing/2"
+      },
+      {
+        "cssVar": "--sp3",
+        "value": 12,
+        "figmaVariable": "spacing/3"
+      },
+      {
+        "cssVar": "--sp4",
+        "value": 16,
+        "figmaVariable": "spacing/4"
+      },
+      {
+        "cssVar": "--sp5",
+        "value": 20,
+        "figmaVariable": "spacing/5"
+      },
+      {
+        "cssVar": "--sp6",
+        "value": 24,
+        "figmaVariable": "spacing/6"
+      },
+      {
+        "cssVar": "--sp8",
+        "value": 32,
+        "figmaVariable": "spacing/8"
+      },
+      {
+        "cssVar": "--sp10",
+        "value": 40,
+        "figmaVariable": "spacing/10"
+      },
+      {
+        "cssVar": "--sp12",
+        "value": 48,
+        "figmaVariable": "spacing/12"
+      }
+    ],
+    "radii": [
+      {
+        "cssVar": "--radius",
+        "value": 3,
+        "figmaVariable": "radius/default"
+      },
+      {
+        "value": 50,
+        "unit": "%",
+        "figmaVariable": "radius/full",
+        "comment": "border-radius:50% used for avatars / round buttons"
+      },
+      {
+        "value": 36,
+        "figmaVariable": "radius/phone-frame"
+      },
+      {
+        "value": 11,
+        "figmaVariable": "radius/toggle-track"
+      },
+      {
+        "value": 10,
+        "figmaVariable": "radius/badge"
+      }
+    ],
+    "borders": [
+      {
+        "cssVar": "--border",
+        "stroke": {
+          "weight": 2,
+          "style": "solid",
+          "colorVar": "color/border"
+        }
+      }
+    ],
+    "shadows": [
+      {
+        "cssVar": "--shadow",
+        "rawValue": "3px 3px 0 #1a1a1a",
+        "figmaEffectStyle": "shadow/default",
+        "effect": {
+          "type": "DROP_SHADOW",
+          "x": 3,
+          "y": 3,
+          "blur": 0,
+          "spread": 0,
+          "colorVar": "color/border"
+        }
+      },
+      {
+        "cssVar": "--shadow-sm",
+        "rawValue": "2px 2px 0 #1a1a1a",
+        "figmaEffectStyle": "shadow/sm",
+        "effect": {
+          "type": "DROP_SHADOW",
+          "x": 2,
+          "y": 2,
+          "blur": 0,
+          "spread": 0,
+          "colorVar": "color/border"
+        }
+      }
+    ],
+    "typography": [
+      {
+        "id": "fs-3xl-bold",
+        "fontSize": 36,
+        "weight": 700,
+        "lineHeight": 1.2,
+        "figmaTextStyle": "text/3xl-bold",
+        "usage": "page hero"
+      },
+      {
+        "id": "fs-2xl-bold",
+        "fontSize": 28,
+        "weight": 700,
+        "lineHeight": 1.2,
+        "figmaTextStyle": "text/2xl-bold",
+        "usage": "section title"
+      },
+      {
+        "id": "fs-xl-bold",
+        "fontSize": 22,
+        "weight": 700,
+        "figmaTextStyle": "text/xl-bold",
+        "usage": "card title / large action"
+      },
+      {
+        "id": "fs-lg-bold",
+        "fontSize": 18,
+        "weight": 700,
+        "figmaTextStyle": "text/lg-bold",
+        "usage": "subtitle / label"
+      },
+      {
+        "id": "fs-md-regular",
+        "fontSize": 15,
+        "weight": 400,
+        "lineHeight": 1.6,
+        "figmaTextStyle": "text/md-regular",
+        "usage": "body"
+      },
+      {
+        "id": "fs-md-bold",
+        "fontSize": 15,
+        "weight": 700,
+        "figmaTextStyle": "text/md-bold",
+        "usage": "buttons / list-item-title"
+      },
+      {
+        "id": "fs-sm-regular",
+        "fontSize": 13,
+        "weight": 400,
+        "figmaTextStyle": "text/sm-regular",
+        "usage": "caption / helper"
+      },
+      {
+        "id": "fs-sm-bold",
+        "fontSize": 13,
+        "weight": 700,
+        "figmaTextStyle": "text/sm-bold",
+        "usage": "tab labels / inp-label"
+      },
+      {
+        "id": "fs-xs-regular",
+        "fontSize": 11,
+        "weight": 400,
+        "figmaTextStyle": "text/xs-regular",
+        "usage": "hint / timestamp"
+      },
+      {
+        "id": "fs-xs-label",
+        "fontSize": 11,
+        "weight": 400,
+        "letterSpacing": 1,
+        "textCase": "UPPER",
+        "figmaTextStyle": "text/xs-label",
+        "usage": ".label / sidebar headings"
+      }
+    ]
+  },
+  "icons": {
+    "namespace": "Icon",
+    "match": {
+      "selector": "i[class*='iconoir-']"
+    },
+    "extractName": {
+      "from": "class",
+      "regex": "iconoir-([a-z0-9-]+)",
+      "captureGroup": 1
+    },
+    "figmaInstanceName": "Icon/{name}",
+    "sizeFromClass": [
+      {
+        "class": "icon-xs",
+        "size": 14
+      },
+      {
+        "class": "icon-sm",
+        "size": 18
+      },
+      {
+        "class": "icon-md",
+        "size": 24
+      },
+      {
+        "class": "icon-lg",
+        "size": 32
+      },
+      {
+        "class": "icon-xl",
+        "size": 48
+      }
+    ],
+    "defaultSize": 20,
+    "fallback": "createTextNodeWithIconCharacter"
+  },
+  "components": [
+    {
+      "id": "button",
+      "figmaComponent": "Button",
+      "match": {
+        "selector": "button.btn, a.btn, .btn"
+      },
+      "excludeIfAlsoMatches": [
+        "page-btn",
+        "tab-item",
+        "tab-line-item",
+        "navbar-link",
+        "tabbar-item",
+        "sidebar-nav-item",
+        "dropdown-item"
+      ],
+      "variantProperties": {
+        "intent": {
+          "default": "default",
+          "values": [
+            "default",
+            "primary",
+            "danger",
+            "success",
+            "ghost",
+            "outline"
+          ]
+        },
+        "size": {
+          "default": "md",
+          "values": [
+            "sm",
+            "md",
+            "lg",
+            "icon"
+          ]
+        },
+        "block": {
+          "default": "false",
+          "values": [
+            "true",
+            "false"
+          ]
+        },
+        "state": {
+          "default": "default",
+          "values": [
+            "default",
+            "disabled"
+          ]
+        }
+      },
+      "variantRules": [
+        {
+          "when": {
+            "class": "btn-primary"
+          },
+          "set": {
+            "intent": "primary"
+          }
+        },
+        {
+          "when": {
+            "class": "btn-danger"
+          },
+          "set": {
+            "intent": "danger"
+          }
+        },
+        {
+          "when": {
+            "class": "btn-success"
+          },
+          "set": {
+            "intent": "success"
+          }
+        },
+        {
+          "when": {
+            "class": "btn-ghost"
+          },
+          "set": {
+            "intent": "ghost"
+          }
+        },
+        {
+          "when": {
+            "class": "btn-outline"
+          },
+          "set": {
+            "intent": "outline"
+          }
+        },
+        {
+          "when": {
+            "class": "btn-sm"
+          },
+          "set": {
+            "size": "sm"
+          }
+        },
+        {
+          "when": {
+            "class": "btn-lg"
+          },
+          "set": {
+            "size": "lg"
+          }
+        },
+        {
+          "when": {
+            "class": "btn-icon"
+          },
+          "set": {
+            "size": "icon"
+          }
+        },
+        {
+          "when": {
+            "class": "btn-block"
+          },
+          "set": {
+            "block": "true"
+          }
+        },
+        {
+          "when": {
+            "attr": "disabled"
+          },
+          "set": {
+            "state": "disabled"
+          }
+        }
+      ],
+      "slots": {
+        "icon": {
+          "selector": ":scope > i[class*='iconoir-']",
+          "type": "icon",
+          "optional": true
+        },
+        "label": {
+          "selector": ":scope",
+          "type": "text",
+          "from": "ownText",
+          "optional": true
+        }
+      },
+      "stopRecursion": true
+    },
+    {
+      "id": "input-text",
+      "figmaComponent": "Input",
+      "match": {
+        "selector": "input.inp:not([type='checkbox']):not([type='radio'])"
+      },
+      "variantProperties": {
+        "kind": {
+          "default": "text",
+          "values": [
+            "text",
+            "password",
+            "email",
+            "tel",
+            "number",
+            "search"
+          ]
+        },
+        "state": {
+          "default": "default",
+          "values": [
+            "default",
+            "focus",
+            "error",
+            "disabled",
+            "readonly"
+          ]
+        }
+      },
+      "variantRules": [
+        {
+          "when": {
+            "attr": "type",
+            "equals": "password"
+          },
+          "set": {
+            "kind": "password"
+          }
+        },
+        {
+          "when": {
+            "attr": "type",
+            "equals": "email"
+          },
+          "set": {
+            "kind": "email"
+          }
+        },
+        {
+          "when": {
+            "attr": "type",
+            "equals": "tel"
+          },
+          "set": {
+            "kind": "tel"
+          }
+        },
+        {
+          "when": {
+            "attr": "type",
+            "equals": "number"
+          },
+          "set": {
+            "kind": "number"
+          }
+        },
+        {
+          "when": {
+            "attr": "type",
+            "equals": "search"
+          },
+          "set": {
+            "kind": "search"
+          }
+        },
+        {
+          "when": {
+            "class": "inp-error"
+          },
+          "set": {
+            "state": "error"
+          }
+        },
+        {
+          "when": {
+            "attr": "disabled"
+          },
+          "set": {
+            "state": "disabled"
+          }
+        },
+        {
+          "when": {
+            "attr": "readonly"
+          },
+          "set": {
+            "state": "readonly"
+          }
+        }
+      ],
+      "slots": {
+        "value": {
+          "selector": ":scope",
+          "type": "text",
+          "from": "valueAttr",
+          "optional": true
+        },
+        "placeholder": {
+          "selector": ":scope",
+          "type": "text",
+          "from": "placeholderAttr",
+          "optional": true
+        }
+      },
+      "stopRecursion": true
+    },
+    {
+      "id": "input-textarea",
+      "figmaComponent": "Input",
+      "match": {
+        "selector": "textarea.inp"
+      },
+      "variantProperties": {
+        "kind": {
+          "default": "textarea"
+        },
+        "state": {
+          "default": "default",
+          "values": [
+            "default",
+            "error",
+            "disabled"
+          ]
+        }
+      },
+      "variantRules": [
+        {
+          "when": {
+            "class": "inp-error"
+          },
+          "set": {
+            "state": "error"
+          }
+        },
+        {
+          "when": {
+            "attr": "disabled"
+          },
+          "set": {
+            "state": "disabled"
+          }
+        }
+      ],
+      "slots": {
+        "value": {
+          "selector": ":scope",
+          "type": "text",
+          "from": "ownText",
+          "optional": true
+        },
+        "placeholder": {
+          "selector": ":scope",
+          "type": "text",
+          "from": "placeholderAttr",
+          "optional": true
+        }
+      },
+      "stopRecursion": true
+    },
+    {
+      "id": "input-select",
+      "figmaComponent": "Select",
+      "match": {
+        "selector": "select.inp"
+      },
+      "variantProperties": {
+        "state": {
+          "default": "default",
+          "values": [
+            "default",
+            "error",
+            "disabled"
+          ]
+        }
+      },
+      "variantRules": [
+        {
+          "when": {
+            "class": "inp-error"
+          },
+          "set": {
+            "state": "error"
+          }
+        },
+        {
+          "when": {
+            "attr": "disabled"
+          },
+          "set": {
+            "state": "disabled"
+          }
+        }
+      ],
+      "slots": {
+        "value": {
+          "selector": "option:checked, option:first-child",
+          "type": "text",
+          "optional": true
+        }
+      },
+      "stopRecursion": true
+    },
+    {
+      "id": "form-field",
+      "figmaComponent": "FormField",
+      "match": {
+        "selector": ".inp-group"
+      },
+      "slots": {
+        "label": {
+          "selector": ":scope > .inp-label",
+          "type": "text",
+          "optional": true
+        },
+        "input": {
+          "selector": ":scope > .inp, :scope > .inp-addon, :scope > .search-wrap",
+          "type": "child",
+          "optional": true
+        },
+        "hint": {
+          "selector": ":scope > .inp-hint",
+          "type": "text",
+          "optional": true
+        },
+        "error": {
+          "selector": ":scope > .inp-err-msg",
+          "type": "text",
+          "optional": true
+        }
+      },
+      "variantProperties": {
+        "withLabel": {
+          "default": "true",
+          "values": [
+            "true",
+            "false"
+          ]
+        },
+        "withHint": {
+          "default": "false",
+          "values": [
+            "true",
+            "false"
+          ]
+        },
+        "withError": {
+          "default": "false",
+          "values": [
+            "true",
+            "false"
+          ]
+        }
+      },
+      "variantRules": [
+        {
+          "when": {
+            "hasChild": ".inp-label"
+          },
+          "set": {
+            "withLabel": "true"
+          }
+        },
+        {
+          "when": {
+            "hasChild": ".inp-hint"
+          },
+          "set": {
+            "withHint": "true"
+          }
+        },
+        {
+          "when": {
+            "hasChild": ".inp-err-msg"
+          },
+          "set": {
+            "withError": "true"
+          }
+        }
+      ]
+    },
+    {
+      "id": "input-addon",
+      "figmaComponent": "InputAddon",
+      "match": {
+        "selector": ".inp-addon"
+      },
+      "slots": {
+        "input": {
+          "selector": ":scope > .inp",
+          "type": "child"
+        },
+        "addon": {
+          "selector": ":scope > .btn",
+          "type": "child"
+        }
+      }
+    },
+    {
+      "id": "search-input",
+      "figmaComponent": "SearchInput",
+      "match": {
+        "selector": ".search-wrap"
+      },
+      "slots": {
+        "icon": {
+          "selector": ":scope > .search-icon i",
+          "type": "icon",
+          "optional": true
+        },
+        "input": {
+          "selector": ":scope > .inp",
+          "type": "child"
+        }
+      }
+    },
+    {
+      "id": "checkbox",
+      "figmaComponent": "Checkbox",
+      "match": {
+        "selector": ".ck-wrap:has(.ck-box)"
+      },
+      "variantProperties": {
+        "state": {
+          "default": "unchecked",
+          "values": [
+            "unchecked",
+            "checked",
+            "indeterminate",
+            "disabled"
+          ]
+        }
+      },
+      "variantRules": [
+        {
+          "when": {
+            "childHasClass": "checked",
+            "selector": ".ck-box"
+          },
+          "set": {
+            "state": "checked"
+          }
+        },
+        {
+          "when": {
+            "childTextContains": "—",
+            "selector": ".ck-box"
+          },
+          "set": {
+            "state": "indeterminate"
+          }
+        },
+        {
+          "when": {
+            "selfStyleEquals": {
+              "pointerEvents": "none"
+            }
+          },
+          "set": {
+            "state": "disabled"
+          }
+        }
+      ],
+      "slots": {
+        "label": {
+          "selector": ":scope",
+          "type": "text",
+          "from": "ownText"
+        }
+      },
+      "stopRecursion": true
+    },
+    {
+      "id": "radio",
+      "figmaComponent": "Radio",
+      "match": {
+        "selector": ".ck-wrap:has(.radio-box)"
+      },
+      "variantProperties": {
+        "state": {
+          "default": "unchecked",
+          "values": [
+            "unchecked",
+            "checked",
+            "disabled"
+          ]
+        }
+      },
+      "variantRules": [
+        {
+          "when": {
+            "childHasClass": "checked",
+            "selector": ".radio-box"
+          },
+          "set": {
+            "state": "checked"
+          }
+        },
+        {
+          "when": {
+            "selfStyleEquals": {
+              "pointerEvents": "none"
+            }
+          },
+          "set": {
+            "state": "disabled"
+          }
+        }
+      ],
+      "slots": {
+        "label": {
+          "selector": ":scope",
+          "type": "text",
+          "from": "ownText"
+        }
+      },
+      "stopRecursion": true
+    },
+    {
+      "id": "toggle",
+      "figmaComponent": "Toggle",
+      "match": {
+        "selector": ".toggle-wrap"
+      },
+      "variantProperties": {
+        "state": {
+          "default": "off",
+          "values": [
+            "off",
+            "on",
+            "disabled"
+          ]
+        }
+      },
+      "variantRules": [
+        {
+          "when": {
+            "childHasClass": "on",
+            "selector": ".toggle-track"
+          },
+          "set": {
+            "state": "on"
+          }
+        },
+        {
+          "when": {
+            "selfStyleEquals": {
+              "pointerEvents": "none"
+            }
+          },
+          "set": {
+            "state": "disabled"
+          }
+        }
+      ],
+      "slots": {
+        "label": {
+          "selector": ":scope > span",
+          "type": "text",
+          "optional": true
+        }
+      },
+      "stopRecursion": true
+    },
+    {
+      "id": "slider",
+      "figmaComponent": "Slider",
+      "match": {
+        "selector": ".mock-slider"
+      },
+      "extract": {
+        "fillPercent": {
+          "selector": ":scope > .mock-slider-fill",
+          "from": "styleWidth"
+        }
+      },
+      "stopRecursion": true
+    },
+    {
+      "id": "navbar",
+      "figmaComponent": "Navbar",
+      "match": {
+        "selector": ".navbar"
+      },
+      "slots": {
+        "brand": {
+          "selector": ":scope > .navbar-brand",
+          "type": "child",
+          "optional": true
+        },
+        "links": {
+          "selector": ":scope > .navbar-link",
+          "type": "childList",
+          "optional": true
+        },
+        "actions": {
+          "selector": ":scope > .btn",
+          "type": "childList",
+          "optional": true
+        }
+      }
+    },
+    {
+      "id": "navbar-link",
+      "figmaComponent": "NavbarLink",
+      "match": {
+        "selector": ".navbar-link"
+      },
+      "variantProperties": {
+        "state": {
+          "default": "default",
+          "values": [
+            "default",
+            "active"
+          ]
+        }
+      },
+      "variantRules": [
+        {
+          "when": {
+            "class": "active"
+          },
+          "set": {
+            "state": "active"
+          }
+        }
+      ],
+      "slots": {
+        "label": {
+          "selector": ":scope",
+          "type": "text",
+          "from": "ownText"
+        }
+      },
+      "stopRecursion": true
+    },
+    {
+      "id": "tabbar",
+      "figmaComponent": "TabBar",
+      "match": {
+        "selector": ".tabbar"
+      },
+      "slots": {
+        "items": {
+          "selector": ":scope > .tabbar-item",
+          "type": "childList"
+        }
+      }
+    },
+    {
+      "id": "tabbar-item",
+      "figmaComponent": "TabBarItem",
+      "match": {
+        "selector": ".tabbar-item"
+      },
+      "variantProperties": {
+        "state": {
+          "default": "default",
+          "values": [
+            "default",
+            "active"
+          ]
+        }
+      },
+      "variantRules": [
+        {
+          "when": {
+            "class": "active"
+          },
+          "set": {
+            "state": "active"
+          }
+        }
+      ],
+      "slots": {
+        "icon": {
+          "selector": ":scope > .tabbar-icon i",
+          "type": "icon",
+          "optional": true
+        },
+        "label": {
+          "selector": ":scope",
+          "type": "text",
+          "from": "ownText"
+        }
+      },
+      "stopRecursion": true
+    },
+    {
+      "id": "tabs",
+      "figmaComponent": "Tabs",
+      "match": {
+        "selector": ".tabs"
+      },
+      "variantProperties": {
+        "style": {
+          "default": "box",
+          "values": [
+            "box",
+            "underline"
+          ]
+        }
+      },
+      "variantRules": [
+        {
+          "when": {
+            "hasChild": ".tab-line-item"
+          },
+          "set": {
+            "style": "underline"
+          }
+        },
+        {
+          "when": {
+            "hasChild": ".tab-item"
+          },
+          "set": {
+            "style": "box"
+          }
+        }
+      ],
+      "slots": {
+        "items": {
+          "selector": ":scope > .tab-item, :scope > .tab-line-item",
+          "type": "childList"
+        }
+      }
+    },
+    {
+      "id": "tab-item",
+      "figmaComponent": "TabItem",
+      "match": {
+        "selector": ".tab-item, .tab-line-item"
+      },
+      "variantProperties": {
+        "style": {
+          "default": "box",
+          "values": [
+            "box",
+            "underline"
+          ]
+        },
+        "state": {
+          "default": "default",
+          "values": [
+            "default",
+            "active"
+          ]
+        }
+      },
+      "variantRules": [
+        {
+          "when": {
+            "class": "tab-line-item"
+          },
+          "set": {
+            "style": "underline"
+          }
+        },
+        {
+          "when": {
+            "class": "tab-item"
+          },
+          "set": {
+            "style": "box"
+          }
+        },
+        {
+          "when": {
+            "class": "active"
+          },
+          "set": {
+            "state": "active"
+          }
+        }
+      ],
+      "slots": {
+        "label": {
+          "selector": ":scope",
+          "type": "text",
+          "from": "ownText"
+        }
+      },
+      "stopRecursion": true
+    },
+    {
+      "id": "breadcrumb",
+      "figmaComponent": "Breadcrumb",
+      "match": {
+        "selector": ".breadcrumb"
+      },
+      "slots": {
+        "items": {
+          "selector": ":scope > a, :scope > span:not(.breadcrumb-sep)",
+          "type": "childList"
+        }
+      }
+    },
+    {
+      "id": "pagination",
+      "figmaComponent": "Pagination",
+      "match": {
+        "selector": ".pagination"
+      },
+      "slots": {
+        "items": {
+          "selector": ":scope > .page-btn",
+          "type": "childList"
+        }
+      }
+    },
+    {
+      "id": "page-button",
+      "figmaComponent": "PageButton",
+      "match": {
+        "selector": ".page-btn"
+      },
+      "variantProperties": {
+        "state": {
+          "default": "default",
+          "values": [
+            "default",
+            "active",
+            "disabled"
+          ]
+        }
+      },
+      "variantRules": [
+        {
+          "when": {
+            "class": "active"
+          },
+          "set": {
+            "state": "active"
+          }
+        },
+        {
+          "when": {
+            "attr": "disabled"
+          },
+          "set": {
+            "state": "disabled"
+          }
+        }
+      ],
+      "slots": {
+        "label": {
+          "selector": ":scope",
+          "type": "text",
+          "from": "ownText"
+        }
+      },
+      "stopRecursion": true
+    },
+    {
+      "id": "stepper",
+      "figmaComponent": "Stepper",
+      "match": {
+        "selector": ".stepper"
+      },
+      "slots": {
+        "steps": {
+          "selector": ":scope > .step",
+          "type": "childList"
+        }
+      }
+    },
+    {
+      "id": "step",
+      "figmaComponent": "Step",
+      "match": {
+        "selector": ".step"
+      },
+      "variantProperties": {
+        "state": {
+          "default": "default",
+          "values": [
+            "default",
+            "active",
+            "done"
+          ]
+        },
+        "withLine": {
+          "default": "false",
+          "values": [
+            "true",
+            "false"
+          ]
+        }
+      },
+      "variantRules": [
+        {
+          "when": {
+            "childHasClass": "done",
+            "selector": ".step-circle"
+          },
+          "set": {
+            "state": "done"
+          }
+        },
+        {
+          "when": {
+            "childHasClass": "active",
+            "selector": ".step-circle"
+          },
+          "set": {
+            "state": "active"
+          }
+        },
+        {
+          "when": {
+            "hasChild": ".step-line"
+          },
+          "set": {
+            "withLine": "true"
+          }
+        }
+      ],
+      "slots": {
+        "number": {
+          "selector": ":scope > .step-circle",
+          "type": "text",
+          "from": "ownText",
+          "optional": true
+        },
+        "label": {
+          "selector": ":scope > .step-label",
+          "type": "text",
+          "optional": true
+        }
+      },
+      "stopRecursion": true
+    },
+    {
+      "id": "sidebar-nav",
+      "figmaComponent": "SidebarNav",
+      "match": {
+        "selector": ".sidebar-nav"
+      },
+      "slots": {
+        "items": {
+          "selector": ":scope > .sidebar-nav-section, :scope > .sidebar-nav-item",
+          "type": "childList"
+        }
+      }
+    },
+    {
+      "id": "sidebar-nav-item",
+      "figmaComponent": "SidebarNavItem",
+      "match": {
+        "selector": ".sidebar-nav-item"
+      },
+      "variantProperties": {
+        "state": {
+          "default": "default",
+          "values": [
+            "default",
+            "active"
+          ]
+        }
+      },
+      "variantRules": [
+        {
+          "when": {
+            "class": "active"
+          },
+          "set": {
+            "state": "active"
+          }
+        }
+      ],
+      "slots": {
+        "icon": {
+          "selector": ":scope > i[class*='iconoir-']",
+          "type": "icon",
+          "optional": true
+        },
+        "label": {
+          "selector": ":scope",
+          "type": "text",
+          "from": "ownText"
+        }
+      },
+      "stopRecursion": true
+    },
+    {
+      "id": "sidebar-nav-section",
+      "figmaComponent": "SidebarNavSection",
+      "match": {
+        "selector": ".sidebar-nav-section"
+      },
+      "slots": {
+        "label": {
+          "selector": ":scope",
+          "type": "text",
+          "from": "ownText"
+        }
+      },
+      "stopRecursion": true
+    },
+    {
+      "id": "card",
+      "figmaComponent": "Card",
+      "match": {
+        "selector": ".card"
+      },
+      "variantProperties": {
+        "withImage": {
+          "default": "false",
+          "values": [
+            "true",
+            "false"
+          ]
+        },
+        "withFooter": {
+          "default": "false",
+          "values": [
+            "true",
+            "false"
+          ]
+        }
+      },
+      "variantRules": [
+        {
+          "when": {
+            "hasChild": ".card-img"
+          },
+          "set": {
+            "withImage": "true"
+          }
+        },
+        {
+          "when": {
+            "hasChild": ".card-footer"
+          },
+          "set": {
+            "withFooter": "true"
+          }
+        }
+      ],
+      "slots": {
+        "image": {
+          "selector": ":scope > .card-img",
+          "type": "child",
+          "optional": true
+        },
+        "body": {
+          "selector": ":scope > .card-body",
+          "type": "child"
+        },
+        "footer": {
+          "selector": ":scope > .card-footer",
+          "type": "child",
+          "optional": true
+        }
+      }
+    },
+    {
+      "id": "card-body",
+      "figmaComponent": "CardBody",
+      "match": {
+        "selector": ".card-body"
+      },
+      "slots": {
+        "title": {
+          "selector": ":scope > .card-title",
+          "type": "text",
+          "optional": true
+        },
+        "text": {
+          "selector": ":scope > .card-text",
+          "type": "text",
+          "optional": true
+        }
+      },
+      "disabled": true,
+      "disabledReason": "Pure padding container — registering as a component swallows unexpected children (buttons, inputs). Treat as a generic frame instead; Figma variables will still restore padding/spacing."
+    },
+    {
+      "id": "list",
+      "figmaComponent": "List",
+      "match": {
+        "selector": ".list"
+      },
+      "slots": {
+        "items": {
+          "selector": ":scope > .list-item, :scope > .list-section-header",
+          "type": "childList"
+        }
+      }
+    },
+    {
+      "id": "list-item",
+      "figmaComponent": "ListItem",
+      "match": {
+        "selector": ".list-item"
+      },
+      "variantProperties": {
+        "withLeading": {
+          "default": "false",
+          "values": [
+            "true",
+            "false"
+          ]
+        },
+        "withSub": {
+          "default": "false",
+          "values": [
+            "true",
+            "false"
+          ]
+        },
+        "withAction": {
+          "default": "false",
+          "values": [
+            "true",
+            "false"
+          ]
+        }
+      },
+      "variantRules": [
+        {
+          "when": {
+            "hasChild": ".avatar, .img-ph, i[class*='iconoir-']"
+          },
+          "set": {
+            "withLeading": "true"
+          }
+        },
+        {
+          "when": {
+            "hasChild": ".list-item-sub"
+          },
+          "set": {
+            "withSub": "true"
+          }
+        },
+        {
+          "when": {
+            "hasChild": ".list-item-action"
+          },
+          "set": {
+            "withAction": "true"
+          }
+        }
+      ],
+      "slots": {
+        "leading": {
+          "selector": ":scope > :first-child:is(.avatar, .img-ph, i[class*='iconoir-'])",
+          "type": "child",
+          "optional": true
+        },
+        "title": {
+          "selector": ":scope .list-item-title",
+          "type": "text",
+          "optional": true
+        },
+        "sub": {
+          "selector": ":scope .list-item-sub",
+          "type": "text",
+          "optional": true
+        },
+        "action": {
+          "selector": ":scope > .list-item-action",
+          "type": "child",
+          "optional": true
+        }
+      }
+    },
+    {
+      "id": "list-section-header",
+      "figmaComponent": "ListSectionHeader",
+      "match": {
+        "selector": ".list-section-header"
+      },
+      "slots": {
+        "label": {
+          "selector": ":scope",
+          "type": "text",
+          "from": "ownText"
+        }
+      },
+      "stopRecursion": true
+    },
+    {
+      "id": "avatar",
+      "figmaComponent": "Avatar",
+      "match": {
+        "selector": ".avatar"
+      },
+      "variantProperties": {
+        "size": {
+          "default": "md",
+          "values": [
+            "xs",
+            "sm",
+            "md",
+            "lg"
+          ]
+        },
+        "shape": {
+          "default": "round",
+          "values": [
+            "round",
+            "square"
+          ]
+        }
+      },
+      "variantRules": [
+        {
+          "when": {
+            "class": "avatar-xs"
+          },
+          "set": {
+            "size": "xs"
+          }
+        },
+        {
+          "when": {
+            "class": "avatar-sm"
+          },
+          "set": {
+            "size": "sm"
+          }
+        },
+        {
+          "when": {
+            "class": "avatar-md"
+          },
+          "set": {
+            "size": "md"
+          }
+        },
+        {
+          "when": {
+            "class": "avatar-lg"
+          },
+          "set": {
+            "size": "lg"
+          }
+        },
+        {
+          "when": {
+            "class": "avatar-sq"
+          },
+          "set": {
+            "shape": "square"
+          }
+        }
+      ],
+      "slots": {
+        "label": {
+          "selector": ":scope",
+          "type": "text",
+          "from": "ownText",
+          "optional": true
+        }
+      },
+      "stopRecursion": true
+    },
+    {
+      "id": "badge",
+      "figmaComponent": "Badge",
+      "match": {
+        "selector": ".badge"
+      },
+      "variantProperties": {
+        "color": {
+          "default": "red",
+          "values": [
+            "red",
+            "blue",
+            "green",
+            "gray"
+          ]
+        }
+      },
+      "variantRules": [
+        {
+          "when": {
+            "class": "badge-blue"
+          },
+          "set": {
+            "color": "blue"
+          }
+        },
+        {
+          "when": {
+            "class": "badge-green"
+          },
+          "set": {
+            "color": "green"
+          }
+        },
+        {
+          "when": {
+            "class": "badge-gray"
+          },
+          "set": {
+            "color": "gray"
+          }
+        }
+      ],
+      "slots": {
+        "label": {
+          "selector": ":scope",
+          "type": "text",
+          "from": "ownText"
+        }
+      },
+      "stopRecursion": true
+    },
+    {
+      "id": "tag",
+      "figmaComponent": "Tag",
+      "match": {
+        "selector": ".tag"
+      },
+      "variantProperties": {
+        "style": {
+          "default": "outline",
+          "values": [
+            "outline",
+            "filled",
+            "accent",
+            "danger",
+            "success"
+          ]
+        },
+        "removable": {
+          "default": "false",
+          "values": [
+            "true",
+            "false"
+          ]
+        }
+      },
+      "variantRules": [
+        {
+          "when": {
+            "class": "tag-filled"
+          },
+          "set": {
+            "style": "filled"
+          }
+        },
+        {
+          "when": {
+            "class": "tag-accent"
+          },
+          "set": {
+            "style": "accent"
+          }
+        },
+        {
+          "when": {
+            "class": "tag-danger"
+          },
+          "set": {
+            "style": "danger"
+          }
+        },
+        {
+          "when": {
+            "class": "tag-success"
+          },
+          "set": {
+            "style": "success"
+          }
+        },
+        {
+          "when": {
+            "hasChild": ".tag-x"
+          },
+          "set": {
+            "removable": "true"
+          }
+        }
+      ],
+      "slots": {
+        "icon": {
+          "selector": ":scope > i[class*='iconoir-']:not(.tag-x)",
+          "type": "icon",
+          "optional": true
+        },
+        "label": {
+          "selector": ":scope",
+          "type": "text",
+          "from": "ownText"
+        }
+      },
+      "stopRecursion": true
+    },
+    {
+      "id": "alert",
+      "figmaComponent": "Alert",
+      "match": {
+        "selector": ".alert"
+      },
+      "variantProperties": {
+        "intent": {
+          "default": "default",
+          "values": [
+            "default",
+            "info",
+            "success",
+            "warning",
+            "danger"
+          ]
+        }
+      },
+      "variantRules": [
+        {
+          "when": {
+            "class": "alert-info"
+          },
+          "set": {
+            "intent": "info"
+          }
+        },
+        {
+          "when": {
+            "class": "alert-success"
+          },
+          "set": {
+            "intent": "success"
+          }
+        },
+        {
+          "when": {
+            "class": "alert-warning"
+          },
+          "set": {
+            "intent": "warning"
+          }
+        },
+        {
+          "when": {
+            "class": "alert-danger"
+          },
+          "set": {
+            "intent": "danger"
+          }
+        }
+      ],
+      "slots": {
+        "icon": {
+          "selector": ":scope > .alert-icon i",
+          "type": "icon",
+          "optional": true
+        },
+        "title": {
+          "selector": ":scope .alert-title",
+          "type": "text",
+          "optional": true
+        },
+        "text": {
+          "selector": ":scope .alert-text",
+          "type": "text",
+          "optional": true
+        }
+      }
+    },
+    {
+      "id": "toast",
+      "figmaComponent": "Toast",
+      "match": {
+        "selector": ".toast"
+      },
+      "variantProperties": {
+        "withAction": {
+          "default": "false",
+          "values": [
+            "true",
+            "false"
+          ]
+        },
+        "withClose": {
+          "default": "false",
+          "values": [
+            "true",
+            "false"
+          ]
+        }
+      },
+      "variantRules": [
+        {
+          "when": {
+            "hasChild": ".toast-action"
+          },
+          "set": {
+            "withAction": "true"
+          }
+        },
+        {
+          "when": {
+            "hasChild": ".toast-close"
+          },
+          "set": {
+            "withClose": "true"
+          }
+        }
+      ],
+      "slots": {
+        "icon": {
+          "selector": ":scope > i[class*='iconoir-']",
+          "type": "icon",
+          "optional": true
+        },
+        "label": {
+          "selector": ":scope",
+          "type": "text",
+          "from": "ownText"
+        },
+        "action": {
+          "selector": ":scope > .toast-action",
+          "type": "text",
+          "optional": true
+        }
+      }
+    },
+    {
+      "id": "progress-bar",
+      "figmaComponent": "ProgressBar",
+      "match": {
+        "selector": ".progress-bar"
+      },
+      "variantProperties": {
+        "intent": {
+          "default": "default",
+          "values": [
+            "default",
+            "danger",
+            "success"
+          ]
+        }
+      },
+      "variantRules": [
+        {
+          "when": {
+            "childHasClass": "danger",
+            "selector": ".progress-fill"
+          },
+          "set": {
+            "intent": "danger"
+          }
+        },
+        {
+          "when": {
+            "childHasClass": "success",
+            "selector": ".progress-fill"
+          },
+          "set": {
+            "intent": "success"
+          }
+        }
+      ],
+      "extract": {
+        "percent": {
+          "selector": ":scope > .progress-fill",
+          "from": "styleWidth"
+        }
+      },
+      "stopRecursion": true
+    },
+    {
+      "id": "spinner",
+      "figmaComponent": "Spinner",
+      "match": {
+        "selector": ".spinner"
+      },
+      "stopRecursion": true
+    },
+    {
+      "id": "skeleton",
+      "figmaComponent": "Skeleton",
+      "match": {
+        "selector": ".skeleton"
+      },
+      "extract": {
+        "width": {
+          "from": "computedWidth"
+        },
+        "height": {
+          "from": "computedHeight"
+        }
+      },
+      "stopRecursion": true
+    },
+    {
+      "id": "modal",
+      "figmaComponent": "Modal",
+      "match": {
+        "selector": ".modal"
+      },
+      "slots": {
+        "header": {
+          "selector": ":scope > .modal-header",
+          "type": "child",
+          "optional": true
+        },
+        "body": {
+          "selector": ":scope > .modal-body",
+          "type": "child",
+          "optional": true
+        },
+        "footer": {
+          "selector": ":scope > .modal-footer",
+          "type": "child",
+          "optional": true
+        }
+      }
+    },
+    {
+      "id": "modal-header",
+      "figmaComponent": "ModalHeader",
+      "match": {
+        "selector": ".modal-header"
+      },
+      "slots": {
+        "title": {
+          "selector": ":scope > .modal-title",
+          "type": "text",
+          "optional": true
+        },
+        "close": {
+          "selector": ":scope > .modal-close",
+          "type": "icon",
+          "optional": true
+        }
+      }
+    },
+    {
+      "id": "modal-backdrop",
+      "figmaComponent": "ModalBackdrop",
+      "match": {
+        "selector": ".modal-backdrop"
+      },
+      "slots": {
+        "modal": {
+          "selector": ":scope > .modal",
+          "type": "child"
+        }
+      }
+    },
+    {
+      "id": "bottom-sheet",
+      "figmaComponent": "BottomSheet",
+      "match": {
+        "selector": ".bottom-sheet"
+      },
+      "slots": {
+        "items": {
+          "selector": ":scope .sheet-item",
+          "type": "childList",
+          "optional": true
+        }
+      }
+    },
+    {
+      "id": "dropdown-menu",
+      "figmaComponent": "DropdownMenu",
+      "match": {
+        "selector": ".dropdown-menu"
+      },
+      "slots": {
+        "items": {
+          "selector": ":scope > .dropdown-item, :scope > .dropdown-divider",
+          "type": "childList"
+        }
+      }
+    },
+    {
+      "id": "dropdown-item",
+      "figmaComponent": "DropdownItem",
+      "match": {
+        "selector": ".dropdown-item"
+      },
+      "variantProperties": {
+        "state": {
+          "default": "default",
+          "values": [
+            "default",
+            "active",
+            "danger"
+          ]
+        }
+      },
+      "variantRules": [
+        {
+          "when": {
+            "class": "active"
+          },
+          "set": {
+            "state": "active"
+          }
+        },
+        {
+          "when": {
+            "class": "danger"
+          },
+          "set": {
+            "state": "danger"
+          }
+        }
+      ],
+      "slots": {
+        "icon": {
+          "selector": ":scope > i[class*='iconoir-']",
+          "type": "icon",
+          "optional": true
+        },
+        "label": {
+          "selector": ":scope",
+          "type": "text",
+          "from": "ownText"
+        }
+      },
+      "stopRecursion": true
+    },
+    {
+      "id": "popover",
+      "figmaComponent": "Popover",
+      "match": {
+        "selector": ".popover"
+      },
+      "slots": {
+        "title": {
+          "selector": ":scope > .popover-title",
+          "type": "text",
+          "optional": true
+        },
+        "text": {
+          "selector": ":scope > .popover-text",
+          "type": "text",
+          "optional": true
+        }
+      }
+    },
+    {
+      "id": "tooltip",
+      "figmaComponent": "Tooltip",
+      "match": {
+        "selector": ".tooltip-box"
+      },
+      "slots": {
+        "label": {
+          "selector": ":scope",
+          "type": "text",
+          "from": "ownText"
+        }
+      },
+      "stopRecursion": true
+    },
+    {
+      "id": "table",
+      "figmaComponent": "Table",
+      "match": {
+        "selector": ".table-wrap"
+      },
+      "slots": {
+        "head": {
+          "selector": ":scope thead",
+          "type": "child",
+          "optional": true
+        },
+        "body": {
+          "selector": ":scope tbody",
+          "type": "child",
+          "optional": true
+        }
+      }
+    },
+    {
+      "id": "table-row",
+      "figmaComponent": "TableRow",
+      "match": {
+        "selector": ".table-wrap tr"
+      },
+      "slots": {
+        "cells": {
+          "selector": ":scope > th, :scope > td",
+          "type": "childList"
+        }
+      }
+    },
+    {
+      "id": "empty-state",
+      "figmaComponent": "EmptyState",
+      "match": {
+        "selector": ".empty-state"
+      },
+      "slots": {
+        "icon": {
+          "selector": ":scope > .empty-icon i",
+          "type": "icon",
+          "optional": true
+        },
+        "title": {
+          "selector": ":scope > .empty-title",
+          "type": "text",
+          "optional": true
+        },
+        "text": {
+          "selector": ":scope > .empty-text",
+          "type": "text",
+          "optional": true
+        },
+        "action": {
+          "selector": ":scope > .btn",
+          "type": "child",
+          "optional": true
+        }
+      }
+    },
+    {
+      "id": "image-placeholder",
+      "figmaComponent": "ImagePlaceholder",
+      "match": {
+        "selector": ".img-ph, .card-img"
+      },
+      "extract": {
+        "width": {
+          "from": "computedWidth"
+        },
+        "height": {
+          "from": "computedHeight"
+        },
+        "label": {
+          "from": "ownText",
+          "optional": true
+        }
+      },
+      "stopRecursion": true
+    },
+    {
+      "id": "phone-frame",
+      "figmaComponent": "Frame/Phone",
+      "match": {
+        "selector": ".phone-frame"
+      },
+      "slots": {
+        "screen": {
+          "selector": ":scope > .phone-screen",
+          "type": "child"
+        }
+      },
+      "decorative": [
+        ".phone-notch",
+        ".phone-home"
+      ]
+    },
+    {
+      "id": "browser-frame",
+      "figmaComponent": "Frame/Browser",
+      "match": {
+        "selector": ".browser-frame"
+      },
+      "slots": {
+        "url": {
+          "selector": ":scope .browser-url",
+          "type": "text",
+          "optional": true
+        },
+        "content": {
+          "selector": ":scope > .browser-content",
+          "type": "child"
+        }
+      },
+      "decorative": [
+        ".browser-bar"
+      ]
+    }
+  ],
+  "fallback": {
+    "rules": [
+      {
+        "id": "generic-frame",
+        "description": "If a node does not match any component, render as a Figma Frame with auto-layout inferred from computed style.",
+        "extract": {
+          "layoutMode": "from:computedDisplay",
+          "primaryAxisAlign": "from:justifyContent",
+          "counterAxisAlign": "from:alignItems",
+          "itemSpacing": "from:gap",
+          "paddingTop": "from:paddingTop",
+          "paddingRight": "from:paddingRight",
+          "paddingBottom": "from:paddingBottom",
+          "paddingLeft": "from:paddingLeft",
+          "fills": "from:backgroundColor",
+          "strokes": "from:border",
+          "cornerRadius": "from:borderRadius",
+          "effects": "from:boxShadow"
+        },
+        "tokenBinding": {
+          "fillsLookupTable": "tokens.colors",
+          "spacingLookupTable": "tokens.spacing",
+          "radiiLookupTable": "tokens.radii",
+          "shadowsLookupTable": "tokens.shadows"
+        }
+      },
+      {
+        "id": "generic-text",
+        "description": "Leaf text nodes become Figma Text and bind to the closest text style by (fontSize + weight) lookup.",
+        "match": {
+          "isLeafText": true
+        },
+        "extract": {
+          "characters": "from:ownText",
+          "fontSize": "from:computedFontSize",
+          "fontWeight": "from:computedFontWeight",
+          "lineHeight": "from:computedLineHeight",
+          "letterSpacing": "from:computedLetterSpacing",
+          "textCase": "from:computedTextTransform",
+          "fills": "from:computedColor"
+        },
+        "tokenBinding": {
+          "textStyleLookupTable": "tokens.typography",
+          "fillsLookupTable": "tokens.colors"
+        }
+      }
+    ]
+  },
+  "report": {
+    "trackUnmapped": true,
+    "categories": [
+      "unmapped-color",
+      "unmapped-spacing",
+      "unmapped-textstyle",
+      "unmapped-shadow",
+      "unmapped-icon",
+      "unrecognized-component",
+      "lossy-layout"
+    ],
+    "groupBySource": true
+  },
+  "matcherSemantics": {
+    "selector": "Standard CSS selector applied to the element being evaluated.",
+    "class": "Sugar — element.classList.contains(value).",
+    "attr": "Sugar — element.hasAttribute(value); when paired with 'equals', element.getAttribute(value) === equals.",
+    "hasChild": "element.querySelector(selector) is not null.",
+    "childHasClass": "element.querySelector(selector).classList.contains(class) is true.",
+    "childTextContains": "element.querySelector(selector).textContent.includes(value).",
+    "selfStyleEquals": "Compare getComputedStyle(element)[prop] against expected value.",
+    "isLeafText": "Element has no element children but has non-empty textContent.",
+    "from:ownText": "Use textContent of this element only (excluding child element text).",
+    "from:valueAttr": "Use element.value (form fields).",
+    "from:placeholderAttr": "Use element.getAttribute('placeholder').",
+    "from:styleWidth": "Read width % from inline style of the matched child.",
+    "from:computed*": "Read the corresponding property via getComputedStyle.",
+    "stopRecursion": "Once an element is matched as a component instance, do not recurse into its children — slots have already pulled what we need."
+  }
+}
