@@ -388,7 +388,11 @@ async function renderIconFallback(ir, parent) {
 async function renderFrame(ir, parent, isRoot) {
   let frame;
   if (isRoot) {
-    // Root reuses the outer frame, just sets style on it
+    // Root reuses the outer frame, just sets style on it. NOTE: do NOT
+    // overwrite `frame.name` here — the caller in `runImport()` already set
+    // it to `buildRootName(ir)` (e.g. "Game Key Detail · Mockup"), and the
+    // root IR node's own `name` is usually the body class which we don't
+    // want surfaced as the artboard label.
     frame = parent;
   } else {
     frame = figma.createFrame();
@@ -396,8 +400,8 @@ async function renderFrame(ir, parent, isRoot) {
     frame.clipsContent = false;
     frame.fills = [];
     parent.appendChild(frame);
+    frame.name = ir.name || 'frame';
   }
-  frame.name = ir.name || 'frame';
 
   if (!isRoot) {
     const b = ir.bounds || { x: 0, y: 0, w: 1, h: 1 };
