@@ -126,11 +126,11 @@ async function runImport(ir) {
 }
 
 function buildRootName(ir) {
-  const title = ir.meta && ir.meta.title ? ir.meta.title : 'Mockup Sync';
-  const vp    = ir.meta && ir.meta.viewport ? ir.meta.viewport : null;
-  const suffix = vp ? ' · ' + vp.w + '×' + vp.h : '';
-  const when   = new Date().toLocaleTimeString();
-  return 'Sync · ' + title + suffix + ' · ' + when;
+  // Use the page's <title> verbatim so the Figma frame matches the source —
+  // e.g. "Game Key Detail · Mockup". Falls back to a generic name only when
+  // the capture didn't include a title (older bundles or non-HTML inputs).
+  const title = ir.meta && ir.meta.title ? String(ir.meta.title).trim() : '';
+  return title || 'Mockup Sync';
 }
 
 function positionAtFreeSpot(frame) {
@@ -729,7 +729,14 @@ function paintFromIr(ir) {
     paint = { type: 'SOLID', color: { r: 0.5, g: 0.5, b: 0.5 } };
     if (ir.opacity != null) paint.opacity = ir.opacity;
   }
-  if (ir.var) {
+  // Skip the variable binding when the paint is semi-transparent. Figma
+  // variables only carry RGB; binding here would either lose the alpha (Figma
+  // resets opacity when the bound color resolves) or, if the variable can't
+  // be found in this file, leave us on the gray fallback above. New captures
+  // already withhold `var` in this case, but old IRs in clipboards / files
+  // still have it — handle them defensively here.
+  const hasAlpha = ir.opacity != null && ir.opacity < 1;
+  if (ir.var && !hasAlpha) {
     const v = findVar(ir.var);
     if (v) {
       try {

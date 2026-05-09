@@ -117,19 +117,26 @@
     }
   })();
 
-  /** Returns a Paint value: { var } if matched, { hex } otherwise, null if transparent. */
+  /** Returns a Paint value: { var } if matched and fully opaque, { hex }
+   *  otherwise, null if transparent. When alpha < 1 we deliberately skip the
+   *  variable binding and ship the raw hex + opacity instead — Figma's
+   *  variable bindings carry only the color channel (no alpha), so binding a
+   *  semi-transparent paint to a token would either drop the alpha or, if
+   *  the token is missing on the Figma side, fall back to the renderer's
+   *  gray placeholder (#808080). Skipping the binding keeps the exact pixel
+   *  the user saw on the page; we only lose the token *name* in the layer,
+   *  which is an acceptable trade for these rare alpha cases. */
   function paintFromRgb(rgbString, traceEl) {
     const parsed = rgbToHex(rgbString);
     if (!parsed) return null;
     const lowered = parsed.hex.toLowerCase();
+    const hasAlpha = parsed.opacity != null && parsed.opacity < 1;
     const varName = COLOR_BY_HEX.get(lowered);
-    if (varName) {
+    if (varName && !hasAlpha) {
       stats.tokensBoundColor++;
-      const out = { var: varName };
-      if (parsed.opacity != null) out.opacity = parsed.opacity;
-      return out;
+      return { var: varName };
     }
-    reportUnmapped('unmapped-color', lowered, traceEl);
+    if (!varName) reportUnmapped('unmapped-color', lowered, traceEl);
     const out = { hex: lowered };
     if (parsed.opacity != null) out.opacity = parsed.opacity;
     return out;

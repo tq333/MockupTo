@@ -86,13 +86,13 @@
 
   <h1>Mockup Sync · Import IR JSON</h1>
 
-  <textarea id="json" placeholder='Paste IR JSON here, drop a .json file, or click "Import from clipboard".'></textarea>
+  <textarea id="json" placeholder='Paste IR JSON here, or drop a .json file.'></textarea>
   <div class="hint">
     Produced by the Mockup Sync chrome extension. Spec: <code>ir.v1.schema.json</code>.
   </div>
 
   <div class="btn-row">
-    <button id="paste">From clipboard</button>
+    <button id="clear">Clear</button>
     <button id="import" class="primary" disabled>Import</button>
   </div>
 
@@ -101,7 +101,7 @@
   <script>
     const $       = (id) => document.getElementById(id);
     const $json   = $('json');
-    const $paste  = $('paste');
+    const $clear  = $('clear');
     const $import = $('import');
     const $status = $('status');
 
@@ -143,15 +143,16 @@
       r.readAsText(f);
     });
 
-    // Clipboard paste
-    $paste.addEventListener('click', async () => {
-      try {
-        const t = await navigator.clipboard.readText();
-        $json.value = t;
-        updateButtonState();
-      } catch (e) {
-        setStatus('err', 'Clipboard blocked: ' + e.message + '<br>Please paste manually.');
-      }
+    // Clear textarea — quick way to throw away a previous paste before
+    // dropping in the next one. (We removed the "From clipboard" shortcut:
+    // navigator.clipboard.readText is blocked inside Figma's plugin iframe in
+    // recent builds, so the button never worked anyway. Cmd/Ctrl+V into the
+    // textarea is the path of least resistance.)
+    $clear.addEventListener('click', () => {
+      $json.value = '';
+      clearStatus();
+      updateButtonState();
+      $json.focus();
     });
 
     $import.addEventListener('click', () => {
