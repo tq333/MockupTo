@@ -1,5 +1,5 @@
 // Mockup Sync · capture bundle
-// Generated: 2026-05-08T11:34:57.076Z
+// Generated: 2026-05-09T07:13:52.129Z
 // Source: chrome-extension/src/capture.src.js
 // Mapping: mockup-kit.mapping.json (v1.0.0)
 // DO NOT EDIT — regenerate with `npm run build`
@@ -156,19 +156,74 @@
   // 4. Style inference (frame visual chrome + text)
   // ────────────────────────────────────────────────────────────────────────
 
+  /**
+   * Decide whether `el` lives inside a `border-collapse: collapse` table cell
+   * and, if so, which sides should still draw a border. Browsers merge the
+   * shared edges of adjacent cells into one painted line, so if we naively
+   * give every cell its full 4-side stroke we end up doubling every internal
+   * grid line and tripling the outer frame (table border + row border +
+   * cell border all overlap).
+   *
+   * Strategy: when inside a collapsed table, every cell only paints its
+   * RIGHT and BOTTOM sides. The TABLE element itself keeps drawing its full
+   * border so the left/top edges of the first column/row are still covered.
+   * This produces the same visual grid as the HTML without per-edge bookkeeping.
+   *
+   * Returns `null` when no special handling is needed (caller falls back to
+   * the existing uniform-border branch).
+   */
+  function collapsedCellSides(el, cs) {
+    const tag = el.tagName;
+    if (tag !== 'TD' && tag !== 'TH' && tag !== 'TR' &&
+        tag !== 'THEAD' && tag !== 'TBODY' && tag !== 'TFOOT') return null;
+    // Walk up to the nearest <table>.
+    let table = el.parentElement;
+    while (table && table.tagName !== 'TABLE') table = table.parentElement;
+    if (!table) return null;
+    let tcs;
+    try { tcs = getComputedStyle(table); } catch (_) { return null; }
+    if ((tcs.borderCollapse || '') !== 'collapse') return null;
+
+    const rightW  = parsePx(cs.borderRightWidth);
+    const bottomW = parsePx(cs.borderBottomWidth);
+    if (rightW <= 0 && bottomW <= 0) return null;
+
+    // Borrow whichever side actually has a paint as the canonical color —
+    // browsers resolve cell color from the side being painted.
+    const paint = paintFromRgb(cs.borderRightColor, el)
+               || paintFromRgb(cs.borderBottomColor, el);
+    if (!paint) return null;
+
+    return {
+      paint,
+      top: 0,
+      right: rightW,
+      bottom: bottomW,
+      left: 0,
+    };
+  }
+
   function inferFrameStyle(el) {
     const cs = getComputedStyle(el);
     const style = {};
     const fill = paintFromRgb(cs.backgroundColor, el);
     if (fill) style.fill = fill;
 
-    // Border: only emit if width > 0 on at least one side. We use the top side
-    // as the canonical value (consistent with HTML where most borders are uniform).
-    const borderW = parsePx(cs.borderTopWidth);
-    if (borderW > 0) {
-      const stroke = paintFromRgb(cs.borderTopColor, el);
-      if (stroke) {
-        style.stroke = { paint: stroke, weight: borderW, align: 'INSIDE' };
+    // Border-collapse–aware path for table cells/rows/sections — only emits
+    // the right/bottom sides so shared edges aren't drawn twice.
+    const sides = collapsedCellSides(el, cs);
+    if (sides) {
+      style.strokeSides = sides;
+    } else {
+      // Border: only emit if width > 0 on at least one side. We use the top
+      // side as the canonical value (consistent with HTML where most borders
+      // are uniform).
+      const borderW = parsePx(cs.borderTopWidth);
+      if (borderW > 0) {
+        const stroke = paintFromRgb(cs.borderTopColor, el);
+        if (stroke) {
+          style.stroke = { paint: stroke, weight: borderW, align: 'INSIDE' };
+        }
       }
     }
 
@@ -195,6 +250,44 @@
     if (Number.isFinite(op) && op < 1) style.opacity = op;
 
     return Object.keys(style).length ? style : undefined;
+  }
+
+  /**
+   * Normalize a #text node's raw `textContent` so that it matches what the
+   * browser actually paints, before we hand it to Figma.
+   *
+   * Why: HTML source typically wraps inline text across multiple lines with
+   * indentation, e.g. `<a>\n      Games\n    </a>`. The browser collapses
+   * those newlines + tabs to a single space (and trims at line edges) per
+   * CSS white-space rules, so the user sees just `Games`. Figma's text
+   * engine, however, renders every character literally — newlines become
+   * real line breaks, tabs become wide gaps, and the "Games" glyph drifts
+   * far below or to the right of where the Range API said it would render.
+   *
+   * Strategy:
+   *   - When `white-space` is `pre`, `pre-wrap` or `break-spaces`, the browser
+   *     preserves whitespace, so we must too. Return the raw string.
+   *   - When it's `pre-line`, runs of spaces/tabs collapse but newlines are
+   *     kept; we mirror that.
+   *   - Otherwise (`normal` / `nowrap`): collapse any whitespace run
+   *     (spaces, tabs, newlines) to a single space, then trim leading and
+   *     trailing whitespace. This matches the Range API's measured rect:
+   *     leading/trailing whitespace at line edges contributes 0 width, so
+   *     the rect is positioned around just the visible glyphs — emitting
+   *     trimmed characters keeps the text aligned with that rect.
+   */
+  function normalizeTextContent(raw, parentEl) {
+    if (!raw) return raw;
+    var ws = 'normal';
+    try { ws = getComputedStyle(parentEl).whiteSpace || 'normal'; } catch (_) {}
+    if (ws === 'pre' || ws === 'pre-wrap' || ws === 'break-spaces') {
+      return raw;
+    }
+    if (ws === 'pre-line') {
+      // Collapse spaces/tabs but preserve explicit newlines.
+      return raw.replace(/[ \t]+/g, ' ').replace(/ ?\n ?/g, '\n');
+    }
+    return raw.replace(/\s+/g, ' ').replace(/^ | $/g, '');
   }
 
   function inferTextStyle(el) {
@@ -535,6 +628,13 @@
   function captureElement(el, parentRect) {
     if (shouldSkipElement(el)) return null;
 
+    // <br> has line-box height but no visible content. Browser uses it only as
+    // a layout hint (force line break inside text). The text nodes around it
+    // were already captured at their actual rendered y positions via Range API,
+    // so we don't lose anything by dropping the <br> itself; keeping it would
+    // pollute the IR with zero-width frames between text leaves.
+    if (el.tagName === 'BR') return null;
+
     const rect = el.getBoundingClientRect();
     if (rect.width === 0 && rect.height === 0) return null; // zero-size nodes are noise
 
@@ -704,11 +804,16 @@
         const bounds = relBounds(r, parentRect);
         // Inherit text styling from the parent element.
         const style = inferTextStyle(el);
+        // Collapse whitespace the same way the browser does, so Figma renders
+        // the same glyph string the user saw on the page (no leading newline /
+        // tab indentation pushing the text down or to the right).
+        const characters = normalizeTextContent(raw, el);
+        if (!characters) continue;
         out.push({
           type: 'text',
           name: 'text',
           bounds,
-          characters: raw, // keep original whitespace; Figma renders identically
+          characters,
           style,
         });
         stats.nodesTotal++;

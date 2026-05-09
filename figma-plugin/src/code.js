@@ -660,6 +660,23 @@ function applyFrameStyle(frame, style, bounds) {
       if (style.stroke.weight) try { frame.strokeWeight = style.stroke.weight; } catch (_) {}
       if (style.stroke.align)  try { frame.strokeAlign  = style.stroke.align;  } catch (_) {}
     }
+  } else if (style.strokeSides && style.strokeSides.paint) {
+    // Per-side stroke widths — used for table cells/rows inside a
+    // border-collapse table so we don't double-paint shared edges.
+    const sp = paintFromIr(style.strokeSides.paint);
+    if (sp) {
+      frame.strokes = [sp];
+      try { frame.strokeAlign = 'INSIDE'; } catch (_) {}
+      const sides = style.strokeSides;
+      // Set the canonical weight to the largest side so Figma's "single
+      // weight" fallback (older API) still draws something visible.
+      const max = Math.max(sides.top || 0, sides.right || 0, sides.bottom || 0, sides.left || 0);
+      if (max > 0) try { frame.strokeWeight = max; } catch (_) {}
+      try { frame.strokeTopWeight    = sides.top    || 0; } catch (_) {}
+      try { frame.strokeRightWeight  = sides.right  || 0; } catch (_) {}
+      try { frame.strokeBottomWeight = sides.bottom || 0; } catch (_) {}
+      try { frame.strokeLeftWeight   = sides.left   || 0; } catch (_) {}
+    }
   }
 
   // Radius (px or percent)
