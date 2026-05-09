@@ -1,5 +1,5 @@
 // Mockup Sync · capture bundle
-// Generated: 2026-05-09T07:50:36.709Z
+// Generated: 2026-05-09T08:02:06.340Z
 // Source: chrome-extension/src/capture.src.js
 // Mapping: mockup-kit.mapping.json (v1.0.0)
 // DO NOT EDIT — regenerate with `npm run build`
@@ -122,28 +122,35 @@
     }
   })();
 
-  /** Returns a Paint value: { var } if matched and fully opaque, { hex }
-   *  otherwise, null if transparent. When alpha < 1 we deliberately skip the
-   *  variable binding and ship the raw hex + opacity instead — Figma's
-   *  variable bindings carry only the color channel (no alpha), so binding a
-   *  semi-transparent paint to a token would either drop the alpha or, if
-   *  the token is missing on the Figma side, fall back to the renderer's
-   *  gray placeholder (#808080). Skipping the binding keeps the exact pixel
-   *  the user saw on the page; we only lose the token *name* in the layer,
-   *  which is an acceptable trade for these rare alpha cases. */
+  /** Returns a Paint value: always carries `hex` (safety net), plus an
+   *  optional `var` upgrade when we matched a design-system token AND the
+   *  paint is fully opaque. Null when fully transparent.
+   *
+   *  Why always include `hex`: if we shipped only `{var}` and the user's
+   *  Figma library doesn't actually have that named variable (e.g. mapping
+   *  was extended but the library wasn't), the renderer's `findVar` returns
+   *  null and paintFromIr's gray fallback kicks in — the user sees a gray
+   *  block. With `hex` always present, the worst case degrades to "no token
+   *  binding, but correct color".
+   *
+   *  Why no `var` when alpha < 1: Figma variables only carry RGB; binding
+   *  a semi-transparent paint either drops the alpha or, on a missed
+   *  lookup, falls back to gray. Shipping just hex+opacity keeps the exact
+   *  pixel the user saw on the page. */
   function paintFromRgb(rgbString, traceEl) {
     const parsed = rgbToHex(rgbString);
     if (!parsed) return null;
     const lowered = parsed.hex.toLowerCase();
     const hasAlpha = parsed.opacity != null && parsed.opacity < 1;
     const varName = COLOR_BY_HEX.get(lowered);
-    if (varName && !hasAlpha) {
-      stats.tokensBoundColor++;
-      return { var: varName };
-    }
-    if (!varName) reportUnmapped('unmapped-color', lowered, traceEl);
     const out = { hex: lowered };
     if (parsed.opacity != null) out.opacity = parsed.opacity;
+    if (varName && !hasAlpha) {
+      out.var = varName;
+      stats.tokensBoundColor++;
+    } else if (!varName) {
+      reportUnmapped('unmapped-color', lowered, traceEl);
+    }
     return out;
   }
 
