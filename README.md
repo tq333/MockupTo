@@ -1,8 +1,8 @@
-# Mockup Sync · MockupTo
+# Mockup Sync
 
 > HTML Demo → Figma 轻量反写工具。From wireframes to delivery.
 > 需求文档：[`./REQUIREMENTS.md`](./REQUIREMENTS.md)
-> GitHub：<https://github.com/tq333/MockupTo>
+> GitHub：<https://github.com/tq333/mockup-sync>
 
 ---
 
